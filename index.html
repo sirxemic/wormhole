@@ -269,12 +269,13 @@ vec4 getColor(vec3 pos, vec3 dir, float dist) {
         cosy = cos(pos.y),
         sinz = sin(pos.z),
         cosz = cos(pos.z),
-        r = distanceToWormhole;
+        r = distanceToWormhole,
+        dr = abs(dir.x);
 
     vec3 cubeDir = vec3(
-        dir.x * siny * cosz - r * siny * sinz * dir.z + r * cosy * cosz * dir.y,
-        dir.x * siny * sinz + r * siny * cosz * dir.z + r * cosy * sinz * dir.y,
-        dir.x * cosy - r * siny * dir.y
+        dr * siny * cosz - r * siny * sinz * dir.z + r * cosy * cosz * dir.y,
+        dr * siny * sinz + r * siny * cosz * dir.z + r * cosy * sinz * dir.y,
+        dr * cosy - r * siny * dir.y
     );
 
     vec4 color;
