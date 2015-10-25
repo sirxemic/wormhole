@@ -13,17 +13,12 @@ function PlayerControls(player, domElement)
   this.moveLeft = false;
   this.moveRight = false;
 
+  this.mouseSpeedX = 0;
+  this.mouseSpeedY = 0;
+
   function onMouseMove(e) {
-    var movementX = e.movementX || e.mozMovementX || e.webkitMovementX || 0;
-    var movementY = e.movementY || e.mozMovementY || e.webkitMovementY || 0;
-
-    var movementVector = new THREE.Vector3(movementX, -movementY, 100.0);
-    movementVector.normalize();
-
-    var rotation = new THREE.Quaternion();
-    rotation.setFromUnitVectors(new THREE.Vector3(0, 0, 1), movementVector);
-
-    player.quaternion.multiplyQuaternions(player.quaternion, rotation);
+    self.mouseSpeedX += 4 * (e.movementX || e.mozMovementX || e.webkitMovementX || 0);
+    self.mouseSpeedY += 4 * (e.movementY || e.mozMovementY || e.webkitMovementY || 0);
   }
 
   function onKeyDown(e) {
@@ -52,7 +47,7 @@ function PlayerControls(player, domElement)
     domElement.requestPointerLock();
   };
 
-    // Hook pointer lock state change events for different browsers
+  // Hook pointer lock state change events for different browsers
   document.addEventListener('pointerlockchange', lockChange, false);
   document.addEventListener('mozpointerlockchange', lockChange, false);
   document.addEventListener('webkitpointerlockchange', lockChange, false);
@@ -75,6 +70,18 @@ function PlayerControls(player, domElement)
 PlayerControls.prototype = {
 
   update: function(delta) {
+    // Update camera roll/pitch etc
+    this.mouseSpeedX -= 4 * this.mouseSpeedX * delta;
+    this.mouseSpeedY -= 4 * this.mouseSpeedY * delta;
+
+    var movementVector = new THREE.Vector3(this.mouseSpeedX * delta, -this.mouseSpeedY * delta, 100.0);
+    movementVector.normalize();
+
+    var rotation = new THREE.Quaternion();
+    rotation.setFromUnitVectors(new THREE.Vector3(0, 0, 1), movementVector);
+
+    player.quaternion.multiplyQuaternions(player.quaternion, rotation);
+
     this.velocity.set(0, 0, 0);
 
     if (this.moveForward) {
