@@ -7,7 +7,9 @@ var renderer = new Renderer(container, wormholeSpace);
 
 var player = new Player(wormholeSpace);
 
-player.position.set(10, Math.PI * 0.5, 0);
+var playerX = wormholeSpace.radius * 2 + wormholeSpace.throatLength;
+
+player.position.set(playerX, Math.PI * 0.5, 0);
 player.rotateY(-Math.PI * 0.5);
 
 var playerControls = new PlayerControls(player, container);
@@ -22,7 +24,7 @@ function animate() {
 
   playerControls.update(delta);
   
-  var maxX = wormholeSpace.throatLength + wormholeSpace.radius * 3;
+  var maxX = wormholeSpace.throatLength + wormholeSpace.radius * 4;
   
   if (player.position.x > maxX) {
     player.position.x = maxX;

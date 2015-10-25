@@ -12,6 +12,10 @@ function PlayerControls(player, domElement)
   this.moveBackward = false;
   this.moveLeft = false;
   this.moveRight = false;
+  this.moveUp = false;
+  this.moveDown = false;
+  this.rotateLeft = false;
+  this.rotateRight = false;
 
   this.mouseSpeedX = 0;
   this.mouseSpeedY = 0;
@@ -27,6 +31,10 @@ function PlayerControls(player, domElement)
       case 68: self.moveRight = true; break;
       case 87: self.moveForward = true; break;
       case 83: self.moveBackward = true; break;
+      case 82: self.moveUp = true; break;
+      case 70: self.moveDown = true; break;
+      case 81: self.rotateLeft = true; break;
+      case 69: self.rotateRight = true; break;
     }
   }
 
@@ -36,6 +44,10 @@ function PlayerControls(player, domElement)
       case 68: self.moveRight = false; break;
       case 87: self.moveForward = false; break;
       case 83: self.moveBackward = false; break;
+      case 82: self.moveUp = false; break;
+      case 70: self.moveDown = false; break;
+      case 81: self.rotateLeft = false; break;
+      case 69: self.rotateRight = false; break;
     }
   }
 
@@ -69,42 +81,65 @@ function PlayerControls(player, domElement)
 
 PlayerControls.prototype = {
 
-  update: function(delta) {
-    // Update camera roll/pitch etc
-    this.mouseSpeedX -= 4 * this.mouseSpeedX * delta;
-    this.mouseSpeedY -= 4 * this.mouseSpeedY * delta;
-
-    var movementVector = new THREE.Vector3(this.mouseSpeedX * delta, -this.mouseSpeedY * delta, 100.0);
-    movementVector.normalize();
-
+  update: (function() {
+    var vectorZ = new THREE.Vector3(0, 0, 1);
     var rotation = new THREE.Quaternion();
-    rotation.setFromUnitVectors(new THREE.Vector3(0, 0, 1), movementVector);
 
-    player.quaternion.multiplyQuaternions(player.quaternion, rotation);
+    return function(delta) {
 
-    this.velocity.set(0, 0, 0);
+      // Update camera roll/pitch etc
+      this.mouseSpeedX -= 4 * this.mouseSpeedX * delta;
+      this.mouseSpeedY -= 4 * this.mouseSpeedY * delta;
 
-    if (this.moveForward) {
-      this.velocity.add(new THREE.Vector3(0, 0, 1));
-    }
+      var movementVector = new THREE.Vector3(this.mouseSpeedX * delta, -this.mouseSpeedY * delta, 100.0);
+      movementVector.normalize();
 
-    if (this.moveBackward) {
-      this.velocity.add(new THREE.Vector3(0, 0, -1));
-    }
+      rotation.setFromUnitVectors(vectorZ, movementVector);
 
-    if (this.moveLeft) {
-      this.velocity.add(new THREE.Vector3(-1, 0, 0));
-    }
+      player.quaternion.multiplyQuaternions(player.quaternion, rotation);
 
-    if (this.moveRight) {
-      this.velocity.add(new THREE.Vector3(1, 0, 0));
-    }
+      if (this.rotateLeft) {
+        rotation.setFromAxisAngle(vectorZ, delta);
+        player.quaternion.multiplyQuaternions(player.quaternion, rotation);
+      }
 
-    if (this.velocity.lengthSq() > 0) {
-      this.velocity.normalize().multiplyScalar(delta);
+      if (this.rotateRight) {
+        rotation.setFromAxisAngle(vectorZ, -delta);
+        player.quaternion.multiplyQuaternions(player.quaternion, rotation);
+      }
 
-      this.player.move(this.velocity);
-    }
-  }
+      this.velocity.set(0, 0, 0);
+
+      if (this.moveForward) {
+        this.velocity.add(new THREE.Vector3(0, 0, 1));
+      }
+
+      if (this.moveBackward) {
+        this.velocity.add(new THREE.Vector3(0, 0, -1));
+      }
+
+      if (this.moveLeft) {
+        this.velocity.add(new THREE.Vector3(-1, 0, 0));
+      }
+
+      if (this.moveRight) {
+        this.velocity.add(new THREE.Vector3(1, 0, 0));
+      }
+
+      if (this.moveUp) {
+        this.velocity.add(new THREE.Vector3(0, 1, 0));
+      }
+
+      if (this.moveDown) {
+        this.velocity.add(new THREE.Vector3(0, -1, 0));
+      }
+
+      if (this.velocity.lengthSq() > 0) {
+        this.velocity.normalize().multiplyScalar(delta);
+
+        this.player.move(this.velocity);
+      }
+    };
+  })()
 
 };
