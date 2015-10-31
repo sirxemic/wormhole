@@ -22,7 +22,7 @@ function PlayerControls(player, domElement)
 
   function onMouseMove(e) {
     self.mouseSpeedX += 4 * (e.movementX || e.mozMovementX || e.webkitMovementX || 0);
-    self.mouseSpeedY += 4 * (e.movementY || e.mozMovementY || e.webkitMovementY || 0);
+    //self.mouseSpeedY += 4 * (e.movementY || e.mozMovementY || e.webkitMovementY || 0);
   }
 
   function onKeyDown(e) {
@@ -98,7 +98,7 @@ PlayerControls.prototype = {
 
       player.quaternion.multiplyQuaternions(player.quaternion, rotation);
 
-      if (this.rotateLeft) {
+      /*if (this.rotateLeft) {
         rotation.setFromAxisAngle(vectorZ, delta);
         player.quaternion.multiplyQuaternions(player.quaternion, rotation);
       }
@@ -106,7 +106,7 @@ PlayerControls.prototype = {
       if (this.rotateRight) {
         rotation.setFromAxisAngle(vectorZ, -delta);
         player.quaternion.multiplyQuaternions(player.quaternion, rotation);
-      }
+      }*/
 
       this.velocity.set(0, 0, 0);
 
@@ -126,13 +126,13 @@ PlayerControls.prototype = {
         this.velocity.add(new THREE.Vector3(1, 0, 0));
       }
 
-      if (this.moveUp) {
+      /*if (this.moveUp) {
         this.velocity.add(new THREE.Vector3(0, 1, 0));
       }
 
       if (this.moveDown) {
         this.velocity.add(new THREE.Vector3(0, -1, 0));
-      }
+      }*/
 
       if (this.velocity.lengthSq() > 0) {
         this.velocity.normalize().multiplyScalar(delta);
