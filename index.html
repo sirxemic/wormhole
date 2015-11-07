@@ -273,8 +273,8 @@ vec4 getColor(vec3 position, vec3 direction, float dist) {
 
   vec3 cubeDir = vec3(
     direction.x * sinY * cosZ - r * sinY * sinZ * direction.z + r * cosY * cosZ * direction.y,
-    direction.x * sinY * sinZ + r * sinY * cosZ * direction.z + r * cosY * sinZ * direction.y,
-    direction.x * cosY - r * sinY * direction.y
+    -direction.x * cosY + r * sinY * direction.y,
+    direction.x * sinY * sinZ + r * sinY * cosZ * direction.z + r * cosY * sinZ * direction.y
   );
 
   vec4 color;
