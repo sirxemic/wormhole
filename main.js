@@ -1,5 +1,4 @@
 var container = document.querySelector('#container');
-var debugElement = document.querySelector('#debug');
 
 var wormholeSpace = new WormholeSpace(1.4, 5);
 
@@ -32,22 +31,8 @@ function animate() {
   else if (player.position.x < -maxX) {
     player.position.x = -maxX;
   }
-  
-  updateDebugInfo();
 
   render();
-}
-
-function updateDebugInfo()
-{
-  var y = player.position.y;
-  while (y > Math.PI) y -= Math.PI;
-  while (y < 0) y += Math.PI;
-  var z = player.position.z;
-  while (z > 2 * Math.PI) z -= 2 * Math.PI;
-  while (z < 0) z += 2 * Math.PI;
-  
-  debugElement.textContent = 'Coordinates: (' + player.position.x.toFixed(3) + ', ' + y.toFixed(3) + ', ' + z.toFixed(3) + ')';
 }
 
 function render() {
@@ -55,20 +40,6 @@ function render() {
 }
 
 window.addEventListener('resize', resizeRenderer, false);
-
-var observer = new MutationObserver(function(mutations) {
-  mutations.forEach(function(mutation) {
-    if (mutation.type == 'attributes' && mutation.attributeName == 'style') {
-      resizeRenderer();
-    }
-  });
-});
-
-observer.observe(container, {
-  attributes: true,
-  childList: false,
-  characterData: false
-});
 
 function resizeRenderer() {
   renderer.resize();

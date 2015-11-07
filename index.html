@@ -4,43 +4,44 @@
   <title>Wormhole simulation</title>
   <meta charset="utf-8">
   <style>
+  *, *::before, *::after {
+    margin: 0;
+    box-sizing: border-box;
+  }
   body, html {
     width: 100%;
     height: 100%;
     overflow: hidden;
   }
   body {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    margin: 0;
+    overflow: hidden;
     background: #000;
     color: #fff;
+    font-size: 12px;
     font-family: sans-serif;
   }
   #container {
-    display: block;
-    width: 50%;
-    height: 50%;
-    resize: both;
-    overflow: hidden;
-    box-shadow: 0 0 10px -5px rgba(255,255,255, 0.5);
-    border-radius: 10px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
   }
   canvas {
     display: block;
     border-radius: 10px;
   }
-  #debug {
-    position: fixed;
-    bottom: 0;
-    left:0;
-    padding: 5px;
-  }
-  #info {
+  .settings {
     position: fixed;
     bottom: 0;
     right: 0;
     padding: 5px;
+    z-index: 10;
+    text-align: right;
+  }
+  .settings > label {
+    display: block;
   }
   </style>
 </head>
@@ -48,7 +49,13 @@
 
 <div id="container">
 </div>
-<div id="debug"></div>
+
+<div class="settings">
+  <h3>Pixel size</h3>
+  <label><input type="radio" name="resolution" value="4" checked> 4x4</label>
+  <label><input type="radio" name="resolution" value="2"> 2x2</label>
+  <label><input type="radio" name="resolution" value="1"> 1x1</label>
+</div>
 
 <script type="x-shader/x-vertex" id="vertexShader">
 precision highp float;
@@ -310,6 +317,8 @@ void main()
 <script src="wormholespace.js"></script>
 <script src="player.js"></script>
 <script src="playercontrols.js"></script>
+<script src="scaledrenderer.js"></script>
+<script src="scenerenderer.js"></script>
 <script src="renderer.js"></script>
 <script src="main.js"></script>
 </body>
