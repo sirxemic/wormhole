@@ -41,11 +41,11 @@ function SceneRenderer(space, width, height) {
 
   function loadSkybox(dir, ext)
   {
-    ext = ext || "jpg";
+    ext = ext || "png";
     var files = [
-      "px", "nx",
-      "py", "ny",
-      "pz", "nz"
+      "sky_pos_x", "sky_neg_x",
+      "sky_pos_y", "sky_neg_y",
+      "sky_pos_z", "sky_neg_z"
     ].map(function(file) {
       return dir + file + "." + ext;
     });
