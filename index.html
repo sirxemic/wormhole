@@ -85,6 +85,18 @@ uniform samplerCube uSkybox2;
 
 varying vec3 vRayDir;
 
+struct State2D {
+  vec2 position;
+  vec2 direction;
+  float distance;
+};
+
+struct State3D {
+  vec3 position;
+  vec3 direction;
+  float distance;
+};
+
 /**
  *  Util
  */
@@ -146,8 +158,8 @@ void greatCircle(inout vec2 position, inout vec2 direction, float angle) {
 }
 
 // Do an integration step in 2D wormhole space.
-void step2D(inout vec2 position, inout vec2 direction, inout float dist) {
-  float distanceToWormhole = abs(position.x) - uThroatLength;
+void step2D(inout State2D ray) {
+  float distanceToWormhole = abs(ray.position.x) - uThroatLength;
 
   float delta = 0.1 / uRadiusSquared;
 
@@ -158,12 +170,12 @@ void step2D(inout vec2 position, inout vec2 direction, inout float dist) {
     // Use backwards euler integration
     float h = delta,
         h2 = h * h,
-        x = (position.x / abs(position.x)) * distanceToWormhole,
+        x = (ray.position.x / abs(ray.position.x)) * distanceToWormhole,
         x2 = x * x,
         b2 = uRadiusSquared,
-        dx = direction.x,
+        dx = ray.direction.x,
         dx2 = dx * dx,
-        dy = direction.y,
+        dy = ray.direction.y,
         dy2 = dy * dy,
 
         r2 = b2 + x2,
@@ -176,21 +188,21 @@ void step2D(inout vec2 position, inout vec2 direction, inout float dist) {
         -2.0 * (x2 * (x - hdx) + b2 * (x + hdx)) * (dx + h * x * dy2)
     ) * dy * h / (r2 * (r2 + s) - t * (r2 - s) * dy2);
 
-    direction += directionDelta;
+    ray.direction += directionDelta;
   }
   else {
     // Inside the wormhole spacetime is flat, so just compute the distance to the mouth.
-    if (position.x >= 0.0 && direction.x < 0.0) {
-      delta = (position.x + uThroatLength) / -direction.x;
+    if (ray.position.x >= 0.0 && ray.direction.x < 0.0) {
+      delta = (ray.position.x + uThroatLength) / -ray.direction.x;
     }
-    else if (position.x >= 0.0 && direction.x > 0.0) {
-      delta = (uThroatLength - position.x) / direction.x;
+    else if (ray.position.x >= 0.0 && ray.direction.x > 0.0) {
+      delta = (uThroatLength - ray.position.x) / ray.direction.x;
     }
-    else if (position.x < 0.0 && direction.x > 0.0) {
-      delta = (uThroatLength - position.x) / direction.x;
+    else if (ray.position.x < 0.0 && ray.direction.x > 0.0) {
+      delta = (uThroatLength - ray.position.x) / ray.direction.x;
     }
-    else if (position.x < 0.0 && direction.x < 0.0) {
-      delta = (position.x + uThroatLength) / -direction.x;
+    else if (ray.position.x < 0.0 && ray.direction.x < 0.0) {
+      delta = (ray.position.x + uThroatLength) / -ray.direction.x;
     }
     else {
       // Looks like the camera is pointed into the wormhole's "abyss"
@@ -198,99 +210,100 @@ void step2D(inout vec2 position, inout vec2 direction, inout float dist) {
     }
   }
 
-  position += direction * delta;
+  ray.position += ray.direction * delta;
 
-  dist += delta;
+  ray.distance += delta;
 }
 
 // Normalize the direction according to the curvature.
-void normalizeDirection2D(vec2 position, inout vec2 direction) {
-  float distanceToWormhole = max(0.0, abs(position.x) - uThroatLength);
+void normalizeDirection2D(inout State2D ray) {
+  float distanceToWormhole = max(0.0, abs(ray.position.x) - uThroatLength);
 
   float magnitude = sqrt(
-    direction.x * direction.x +
-    (distanceToWormhole * distanceToWormhole + uRadiusSquared) * direction.y * direction.y
+    ray.direction.x * ray.direction.x +
+    (distanceToWormhole * distanceToWormhole + uRadiusSquared) * ray.direction.y * ray.direction.y
   );
 
-  direction /= magnitude;
+  ray.direction /= magnitude;
 }
 
 // Integrate in 2D wormhole space.
-void integrate2D(inout vec2 position, inout vec2 direction, inout float dist) {
+void integrate2D(inout State2D ray) {
   for (int i = 0; i < 128; i++) {
-    step2D(position, direction, dist);
-    normalizeDirection2D(position, direction);
+    step2D(ray);
+    normalizeDirection2D(ray);
   }
 }
 
 // Integrate!
-void integrate3D(inout vec3 position, inout vec3 direction, inout float dist) {
-  float distanceToWormhole = max(0.0, abs(position.x) - uThroatLength);
+void integrate3D(inout State3D ray) {
+  float distanceToWormhole = max(0.0, abs(ray.position.x) - uThroatLength);
 
-  vec2 pos2D = vec2(position.x, 0.0);
-  vec2 dir2D = vec2(
-    direction.x,
-    sqrt((1.0 - direction.x * direction.x) / (distanceToWormhole * distanceToWormhole + uRadiusSquared))
+  State2D ray2D;
+  ray2D.position = vec2(ray.position.x, 0.0);
+  ray2D.direction = vec2(
+    ray.direction.x,
+    sqrt((1.0 - ray.direction.x * ray.direction.x) / (distanceToWormhole * distanceToWormhole + uRadiusSquared))
   );
+  ray2D.distance = ray.distance;
 
   // Integrate in a 2D plane so we don't have to deal with the poles of spherical coordinates. This works
   // because all geodesics around a wormhole lie in a plane...
   // ...that was the idea, but I still get artifacts around the poles. Oh well...
-  integrate2D(pos2D, dir2D, dist);
+  integrate2D(ray2D);
 
   // Transform the 2D position and direction back into 3D
-  position.x = pos2D.x;
-  direction.x = dir2D.x;
+  ray.position.x = ray2D.position.x;
+  ray.direction.x = ray2D.direction.x;
 
-  greatCircle(position.zy, direction.zy, pos2D.y);
+  greatCircle(ray.position.zy, ray.direction.zy, ray2D.position.y);
 
-  direction.yz = normalize(direction.yz) * dir2D.y;
+  ray.direction.yz = normalize(ray.direction.yz) * ray2D.direction.y;
+
+  ray.distance = ray2D.distance;
 }
 
 // Transform a direction given in flat spacetime coordinates to one of the same angle
 // in wormhole spacetime coordinates.
-void adjustDirection(vec3 position, inout vec3 direction) {
-  float distanceToWormhole = max(0.0, abs(position.x) - uThroatLength);
+void adjustDirection(inout State3D ray) {
+  float distanceToWormhole = max(0.0, abs(ray.position.x) - uThroatLength);
 
   float r = sqrt(distanceToWormhole * distanceToWormhole + uRadiusSquared);
-  direction.y /= r;
-  direction.z /= r * sin(position.y);
+  ray.direction.y /= r;
+  ray.direction.z /= r * sin(ray.position.y);
 }
 
 // Get the final color given a position and direction.
-vec4 getColor(vec3 position, vec3 direction, float dist) {
-  float distanceToWormhole = max(0.0, abs(position.x) - uThroatLength);
+vec4 getColor(State3D ray) {
+  float distanceToWormhole = max(0.0, abs(ray.position.x) - uThroatLength);
 
   if (distanceToWormhole == 0.0) {
     return vec4(0.0, 0.0, 0.0, 1.0);
   }
 
-  float sinY = sin(position.y),
-        cosY = cos(position.y),
-        sinZ = sin(position.z),
-        cosZ = cos(position.z),
-        r = distanceToWormhole * (position.x / abs(position.x));
+  float sinY = sin(ray.position.y),
+        cosY = cos(ray.position.y),
+        sinZ = sin(ray.position.z),
+        cosZ = cos(ray.position.z),
+        r = distanceToWormhole * (ray.position.x / abs(ray.position.x));
 
   vec3 cubeDir = vec3(
-    direction.x * sinY * cosZ - r * sinY * sinZ * direction.z + r * cosY * cosZ * direction.y,
-    -direction.x * cosY + r * sinY * direction.y,
-    direction.x * sinY * sinZ + r * sinY * cosZ * direction.z + r * cosY * sinZ * direction.y
+     ray.direction.x * sinY * cosZ - r * sinY * sinZ * ray.direction.z + r * cosY * cosZ * ray.direction.y,
+    -ray.direction.x * cosY + r * sinY * ray.direction.y,
+     ray.direction.x * sinY * sinZ + r * sinY * cosZ * ray.direction.z + r * cosY * sinZ * ray.direction.y
   );
 
-  vec4 color;
+  vec4 skybox1Color = textureCube(uSkybox1, cubeDir);
+  vec4 skybox2Color = textureCube(uSkybox2, cubeDir);
 
-  if (position.x < 0.0) {
-    color = textureCube(uSkybox2, cubeDir);
-  }
-  else {
-    color = textureCube(uSkybox1, cubeDir);
-  }
+  float merge = 0.5 - clamp(ray.position.x, -0.5, 0.5);
+  vec4 color = mix(skybox1Color, skybox2Color, merge);
 
   // Prettify the thing where everything becomes infinite
   const float cutoffStart = 150.0;
   const float cutoffEnd = 800.0;
-  if (dist > cutoffStart) {
-    color *= max(0.0, (cutoffEnd - dist) / (cutoffEnd - cutoffStart));
+  if (ray.distance > cutoffStart) {
+    color *= max(0.0, (cutoffEnd - ray.distance) / (cutoffEnd - cutoffStart));
   }
 
   return color;
@@ -298,18 +311,19 @@ vec4 getColor(vec3 position, vec3 direction, float dist) {
 
 void main()
 {
-  vec3 rayPos = uCameraPosition;
-  vec3 rayDir = normalize(vRayDir);
+  State3D ray;
+  ray.position = uCameraPosition;
+  ray.direction = normalize(vRayDir);
+  ray.distance = 0.0;
 
   // At this point rayDir makes sense in flat spacetime, but in curved space time
   // it needs to be slightly adjusted.
-  adjustDirection(rayPos, rayDir);
+  adjustDirection(ray);
 
   // Integrate in wormhole space coordinates
-  float rayDistance = 0.0;
-  integrate3D(rayPos, rayDir, rayDistance);
+  integrate3D(ray);
 
-  gl_FragColor = getColor(rayPos, rayDir, rayDistance);
+  gl_FragColor = getColor(ray);
 }
 </script>
 <script src="three.js"></script>
