@@ -151,10 +151,12 @@ void greatCircle(inout vec2 position, inout vec2 direction, float angle) {
     acos(clamp(pos3D.z, -1.0, 1.0))
   );
 
+  float xy = 1.0 / dot(pos3D.xy, pos3D.xy);
+
   direction = vec2(
-    (cos(position.x) * dir3D.y - sin(position.x) * dir3D.x),
+    (pos3D.x * dir3D.y - pos3D.y * dir3D.x) * xy,
     -dir3D.z
-  ) / sin(position.y);
+  ) * xy;
 }
 
 // Do an integration step in 2D wormhole space.
