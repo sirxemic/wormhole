@@ -2,6 +2,24 @@ function SceneRenderer(space, width, height) {
   // Init variables required for rendering
   this._aspectFix = new THREE.Matrix4();
 
+  var skyboxLoader = new THREE.CubeTextureLoader;
+
+  function loadSkybox(dir, ext) {
+    ext = ext || "jpg";
+    var files = [
+      "sky_pos_x", "sky_neg_x",
+      "sky_pos_y", "sky_neg_y",
+      "sky_pos_z", "sky_neg_z"
+    ].map(function(file) {
+      return dir + file + "." + ext;
+    });
+
+    var textureCube = skyboxLoader.load(files);
+    textureCube.format = THREE.RGBFormat;
+
+    return textureCube;
+  }
+
   this._uniforms = {
     uRadiusSquared: { type: "f", value: space.radiusSquared },
     uThroatLength: { type: "f", value: space.throatLength },
@@ -36,23 +54,6 @@ function SceneRenderer(space, width, height) {
 
   var mesh = new THREE.Mesh(geometry, material);
   this._scene.add(mesh);
-
-  function loadSkybox(dir, ext)
-  {
-    ext = ext || "jpg";
-    var files = [
-      "sky_pos_x", "sky_neg_x",
-      "sky_pos_y", "sky_neg_y",
-      "sky_pos_z", "sky_neg_z"
-    ].map(function(file) {
-      return dir + file + "." + ext;
-    });
-
-    var textureCube = THREE.ImageUtils.loadTextureCube(files);
-    textureCube.format = THREE.RGBFormat;
-
-    return textureCube;
-  }
 }
 
 SceneRenderer.prototype = {
