@@ -60,3 +60,19 @@ function toggleUI() {
 }
 
 toggleUI();
+
+function removeIntroduction(event) {
+  // Ignore clicks on links
+  if (event.target.href) {
+    return;
+  }
+
+  document.querySelector('#introduction').classList.add('hidden');
+
+  // When a scrollbar is removed, a resize has to be triggered manually
+  resizeRenderer();
+
+  document.removeEventListener('click', removeIntroduction, false)
+}
+
+document.addEventListener('click', removeIntroduction, false)

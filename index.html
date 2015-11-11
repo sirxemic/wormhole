@@ -11,11 +11,9 @@
   body, html {
     width: 100%;
     height: 100%;
-    overflow: hidden;
   }
   body {
     margin: 0;
-    overflow: hidden;
     background: #000;
     color: #fff;
     font-size: 12px;
@@ -44,6 +42,7 @@
     z-index: 10;
     text-align: right;
     padding: 1em;
+    max-width: 30em;
   }
   .renderer-settings > label {
     display: block;
@@ -53,9 +52,10 @@
     position: fixed;
     bottom: 0;
     left: 0;
-    z-index: 10;
+    z-index: 11;
     text-align: left;
     padding: 1em;
+    background: rgba(0,0,0,0.5);
   }
 
   .ui {
@@ -73,18 +73,77 @@
   .no-ui .renderer-settings {
     transform: translateX(100%);
   }
+
+  #introduction {
+    width: 100%;
+    max-width: 600px;
+    background: rgba(20,20,20, 0.95);
+    box-shadow: 0 10px 20px #000;
+    padding: 1.5em;
+    position: absolute;
+    top: 1em;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    font-size: 14px;
+    transition: transform 0.5s cubic-bezier(.35,-0.29,.25,1);
+  }
+
+  #introduction.hidden {
+    transform: translateY(-120%) translateX(-50%);
+  }
+
+  #introduction h1 {
+    margin-bottom: 1em;
+    text-align: center;
+  }
+
+  #introduction p, #introduction ul {
+    line-height: 1.5;
+    margin: 0 0 1em;
+  }
+
+  #introduction a {
+    color: #387aff;
+  }
+
+  .info {
+    color: #888;
+    text-align: center;
+    border-top: 1px solid #000;
+    padding-top: 1em;
+  }
+
+  .caution {
+    color: #f0e033;
+  }
   </style>
 </head>
 <body>
+
+<div id="introduction">
+  <h1>Travel through a wormhole</h1>
+  <p>So on the internet it's kind of hard to get a realistic impression of what travelling through a wormhole could look like. If you look around a bit you'll find things like:
+  </p>
+  <ul>
+    <li><a target="_blank" href="https://www.youtube.com/watch?v=8tX7KQSKMtQ">this wormhole simulation video</a> based on real maths behing general relativity,
+    <li><a target="_blank" href="https://www.youtube.com/watch?v=Ln2SGm9gEuE">this scene of the movie "Interstellar"</a>, which is epic but completely inaccurate for the interior (the exterior seems legit), and
+    <li><a target="_blank" href="https://sirxemic.github.io/Interstellar">this "Interstellar" thing I made</a>, which is maybe sort of accurate, but in reality is just hacked together without using the maths behind general relativity.
+  </ul>
+  <p>None of these show what a wormhole with a long "throat" would look like. This simulation does.</p>
+  <p class="info">Click anywhere to continue</p>
+</div>
 
 <div id="container">
 </div>
 
 <div class="ui renderer-settings">
-  <h3>Pixel size</h3>
-  <label><input type="radio" name="resolution" value="4" checked> 4x4</label>
-  <label><input type="radio" name="resolution" value="2"> 2x2</label>
-  <label><input type="radio" name="resolution" value="1"> 1x1</label>
+  <h3>Pixel ratio</h3>
+  <label><input type="radio" name="resolution" value="4" checked> 1:4</label>
+  <label><input type="radio" name="resolution" value="3"> 1:3</label>
+  <label><input type="radio" name="resolution" value="2"> 1:2</label>
+  <label><input type="radio" name="resolution" value="1"> 1:1</label>
+  <p class="caution">Caution: depending on the power of your GPU, changing the pixel ratio might slow your browser to a crawl.</p>
 </div>
 
 <div class="ui ui-settings">
