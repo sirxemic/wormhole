@@ -41,7 +41,7 @@ function SceneRenderer(space, width, height) {
 
   function loadSkybox(dir, ext)
   {
-    ext = ext || "png";
+    ext = ext || "jpg";
     var files = [
       "sky_pos_x", "sky_neg_x",
       "sky_pos_y", "sky_neg_y",
