@@ -1,3 +1,8 @@
+var WormholeSpace   = require("./wormholespace");
+var Player          = require("./player");
+var PlayerControls  = require("./playercontrols");
+var Renderer        = require("./renderer");
+
 var container = document.querySelector('#container');
 
 var wormholeSpace = new WormholeSpace(1.4, 5);
@@ -75,4 +80,4 @@ function removeIntroduction(event) {
   document.removeEventListener('click', removeIntroduction, false)
 }
 
-document.addEventListener('click', removeIntroduction, false)
+document.addEventListener('click', removeIntroduction, false);

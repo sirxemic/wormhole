@@ -10,11 +10,11 @@ var MathUtil = {
       }
       return target;
     },
-    
+
     getInverse: function(target, matrix) {
       var me = matrix.elements;
       var te = target.elements;
-      
+
       var a00 = me[0], a01 = me[1], a02 = me[2],
           a10 = me[3], a11 = me[4], a12 = me[5],
           a20 = me[6], a21 = me[7], a22 = me[8],
@@ -26,10 +26,10 @@ var MathUtil = {
           // Calculate the determinant
           det = a00 * b01 + a01 * b11 + a02 * b21;
 
-      if (!det) { 
-        throw new Error("0 determinant"); 
+      if (!det) {
+        throw new Error("0 determinant");
       }
-      
+
       det = 1.0 / det;
 
       te[0] = b01 * det;
@@ -48,3 +48,5 @@ var MathUtil = {
     },
   }
 };
+
+module.exports = MathUtil;

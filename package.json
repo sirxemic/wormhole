@@ -1,0 +1,27 @@
+{
+  "name": "wormhole",
+  "version": "1.0.0",
+  "description": "Simple wormhole simulation",
+  "main": "index.js",
+  "scripts": {
+    "dist": "node node_modules/webpack/bin/webpack.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sirxemic/wormhole.git"
+  },
+  "keywords": [
+    "wormhole",
+    "demo",
+    "webgl",
+    "raytracing"
+  ],
+  "author": "Pim Schreurs",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/sirxemic/wormhole/issues"
+  },
+  "devDependencies": {
+    "webpack": "^1.12.4"
+  }
+}

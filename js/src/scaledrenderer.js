@@ -85,4 +85,6 @@ ScaledRenderer.prototype = {
     renderer.render(this._scene, this._camera);
   }
 
-}
+};
+
+module.exports = ScaledRenderer;

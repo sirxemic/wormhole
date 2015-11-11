@@ -86,6 +86,7 @@ PlayerControls.prototype = {
     var rotation = new THREE.Quaternion();
 
     return function(delta) {
+      var player = this.player;
 
       // Update camera roll/pitch etc
       this.mouseSpeedX -= 4 * this.mouseSpeedX * delta;
@@ -143,3 +144,5 @@ PlayerControls.prototype = {
   })()
 
 };
+
+module.exports = PlayerControls;

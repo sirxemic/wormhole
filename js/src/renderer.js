@@ -1,3 +1,6 @@
+var SceneRenderer = require("./scenerenderer");
+var ScaledRenderer = require("./scaledrenderer");
+
 function Renderer(container, space) {
   var self = this;
 
@@ -52,3 +55,5 @@ Renderer.prototype = {
     this._scaledRenderer.setSize(width, height);
   }
 };
+
+module.exports = Renderer;

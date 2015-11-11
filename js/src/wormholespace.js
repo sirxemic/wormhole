@@ -1,3 +1,5 @@
+var MathUtil = require("./mathutil");
+
 function WormholeSpace(radius, throatLength)
 {
   this.radius = radius;
@@ -29,19 +31,19 @@ WormholeSpace.prototype = {
     var deltaPosition = new THREE.Vector3;
     var deltaDirection = new THREE.Vector3;
     var deltaTetrad = new THREE.Vector3;
-    
+
     var f = new THREE.Vector3;
     var Dfv = new THREE.Matrix3;
     var Dfx = new THREE.Matrix3;
-    
+
     var g = new THREE.Vector3;
     var Dgv = new THREE.Matrix3;
     var Dgx = new THREE.Matrix3;
     var Dgt = new THREE.Matrix3;
-    
+
     var deltaT1 = new THREE.Vector3,
         deltaT2 = new THREE.Vector3;
-    
+
     var lhs = new THREE.Matrix3;
     var lhsInverse = new THREE.Matrix3;
 
@@ -49,7 +51,7 @@ WormholeSpace.prototype = {
       var position = object.position;
       var distanceToWormhole0 = Math.max(0, Math.abs(position.x) - this.throatLength);
       var radiusSquared = this.radiusSquared;
-      
+
       var x = position.x / Math.abs(position.x) * distanceToWormhole0,
           y = position.y,
           z = position.z,
@@ -100,14 +102,14 @@ WormholeSpace.prototype = {
 
       deltaDirection.copy(f).addScaledVector(direction.clone().applyMatrix3(Dfx), delta).multiplyScalar(delta);
       deltaDirection.applyMatrix3(lhsInverse);
-    
+
       deltaPosition.copy(direction.clone().add(deltaDirection).multiplyScalar(delta));
-      
+
       // Integrate tetrad by using parallel transport
       if (object.__tetrad) {
         for (var i = 0; i < 2; i++) {
           var tetrad = object.__tetrad[i];
-          
+
           var tx = tetrad.x,
               ty = tetrad.y,
               tz = tetrad.z;
@@ -129,7 +131,7 @@ WormholeSpace.prototype = {
               (dy * tx + dx * ty) * (x2 - b2) * ib2r22,                   dz * tz * cos2y, 0,
               (dz * tx + dx * tz) * (x2 - b2) * ib2r22, (dz * ty + dy * tz) * cscy * cscy, 0
           );
-          
+
           Dgt.set(
                             0,          dy * x,              dz * x * siny2,
               -dy * x * ib2r2, -dx * x * ib2r2,               dz * cosysiny,
@@ -139,24 +141,24 @@ WormholeSpace.prototype = {
           lhs.identity();
           MathUtil.Matrix3.subtract(lhs, Dgt/*.clone()*/.multiplyScalar(delta));
           MathUtil.Matrix3.getInverse(lhsInverse, lhs)
-          
+
           deltaT1.copy(deltaPosition).applyMatrix3(Dgx);
           deltaT2.copy(deltaDirection).applyMatrix3(Dgv);
-          
+
           deltaTetrad.copy(g).add(deltaT1).add(deltaT2).multiplyScalar(delta).applyMatrix3(lhsInverse);
-          
+
           tetrad.add(deltaTetrad);
         }
       }
-      
+
       direction.add(deltaDirection);
       position.add(deltaPosition);
     };
   })(),
-  
+
   quaternionToTetrad: (function() {
     var rotationMatrix = new THREE.Matrix4;
-    
+
     return function(quaternion, tetrad) {
       rotationMatrix.makeRotationFromQuaternion(quaternion);
 
@@ -164,14 +166,14 @@ WormholeSpace.prototype = {
       tetrad[1].set(rotationMatrix.elements[4], rotationMatrix.elements[5], rotationMatrix.elements[6]);
     };
   })(),
-  
+
   tetradToQuaternion: (function() {
     var rotationMatrix = new THREE.Matrix4;
-    
+
     return function(tetrad, quaternion) {
       tetrad[2].crossVectors(tetrad[0], tetrad[1]);
       //tetrad[1].crossVectors(tetrad[2], tetrad[0]);
-      
+
       for (var i = 0; i < 3; i++) {
         tetrad[i].normalize();
       }
@@ -187,7 +189,7 @@ WormholeSpace.prototype = {
       rotationMatrix.elements[8] = tetrad[2].x;
       rotationMatrix.elements[9] = tetrad[2].y;
       rotationMatrix.elements[10] = tetrad[2].z;
-      
+
       quaternion.setFromRotationMatrix(rotationMatrix).normalize();
     };
   })(),
@@ -195,7 +197,7 @@ WormholeSpace.prototype = {
   move: function(object, direction, distance)
   {
     this.adjustCartesianDirection(object.position, direction);
-    
+
     if (object.quaternion) {
       if (!object.__tetrad) {
         object.__tetrad = [
@@ -205,21 +207,23 @@ WormholeSpace.prototype = {
         ];
       }
       this.quaternionToTetrad(object.quaternion, object.__tetrad);
-      
+
       this.adjustCartesianDirection(object.position, object.__tetrad[0]);
       this.adjustCartesianDirection(object.position, object.__tetrad[1]);
     }
 
     this.step(object, direction, distance);
-        
+
     this.adjustSphericalDirection(object.position, direction);
-    
+
     if (object.quaternion) {
       this.adjustSphericalDirection(object.position, object.__tetrad[0]);
       this.adjustSphericalDirection(object.position, object.__tetrad[1]);
-      
+
       this.tetradToQuaternion(object.__tetrad, object.quaternion);
     }
   }
 
 };
+
+module.exports = WormholeSpace;

@@ -13,3 +13,5 @@ Player.prototype.move = function(velocity) {
 
   this.space.move(this, velocity, distance);
 };
+
+module.exports = Player;
