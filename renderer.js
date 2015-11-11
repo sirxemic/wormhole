@@ -7,13 +7,13 @@ function Renderer(container, space) {
   this._container = container;
   this._space = space;
 
-  this._sceneRenderer = new SceneRenderer(space, this._container.clientWidth, this._container.clientHeight);
-  this._scaledRenderer = new ScaledRenderer(this._container.clientWidth, this._container.clientHeight, 4);
+  this._sceneRenderer = new SceneRenderer(space, this._getWidth(), this._getHeight());
+  this._scaledRenderer = new ScaledRenderer(this._getWidth(), this._getHeight(), this._getPixelSize());
 
   this.resize();
 
-  document.querySelector('.settings').addEventListener('change', function(event) {
-    this._updateScale();
+  document.querySelector('.renderer-settings').addEventListener('change', function(event) {
+    this._updatePixelSize();
 
     event.target.blur();
   }.bind(this));
@@ -21,9 +21,20 @@ function Renderer(container, space) {
 
 Renderer.prototype = {
 
-  _updateScale: function() {
-    var scale = parseInt(document.querySelector("[name=resolution]:checked").value);
-    this._scaledRenderer.setScale(scale);
+  _getWidth: function() {
+    return this._container.clientWidth;
+  },
+
+  _getHeight: function() {
+    return this._container.clientHeight;
+  },
+
+  _getPixelSize: function() {
+    return parseInt(document.querySelector("[name=resolution]:checked").value);
+  },
+
+  _updatePixelSize: function() {
+    this._scaledRenderer.setPixelSize(this._getPixelSize());
   },
 
   render: function(camera) {
@@ -32,8 +43,8 @@ Renderer.prototype = {
   },
 
   resize: function() {
-    var width = this._container.clientWidth,
-        height = this._container.clientHeight;
+    var width = this._getWidth(),
+        height = this._getHeight();
 
     this._webglRenderer.setSize(width, height);
 

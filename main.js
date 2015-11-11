@@ -22,9 +22,9 @@ function animate() {
   if (delta < 0.001) return;
 
   playerControls.update(delta);
-  
+
   var maxX = wormholeSpace.throatLength + wormholeSpace.radius * 4;
-  
+
   if (player.position.x > maxX) {
     player.position.x = maxX;
   }
@@ -46,3 +46,17 @@ function resizeRenderer() {
 }
 
 animate();
+
+var uiToggle = document.querySelector('[name=hide-ui]');
+uiToggle.addEventListener('change', toggleUI, false);
+
+function toggleUI() {
+  if (uiToggle.checked) {
+    document.body.classList.add('no-ui');
+  }
+  else {
+    document.body.classList.remove('no-ui');
+  }
+}
+
+toggleUI();

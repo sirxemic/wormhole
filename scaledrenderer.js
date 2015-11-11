@@ -1,11 +1,11 @@
-function ScaledRenderer(width, height, scale) {
+function ScaledRenderer(width, height, pixelSize) {
   this._width = width;
   this._height = height;
-  this._scale = scale;
+  this._pixelSize = pixelSize;
 
   this.renderTarget = new THREE.WebGLRenderTarget(
-    Math.floor(width / scale),
-    Math.floor(height / scale),
+    Math.floor(width / pixelSize),
+    Math.floor(height / pixelSize),
     {
       minFilter: THREE.LinearFilter,
       magFilter: THREE.LinearFilter,
@@ -67,17 +67,17 @@ ScaledRenderer.prototype = {
     this._height = height;
 
     this.renderTarget.setSize(
-      Math.floor(this._width / this._scale),
-      Math.floor(this._height / this._scale)
+      Math.floor(this._width / this._pixelSize),
+      Math.floor(this._height / this._pixelSize)
     );
   },
 
-  setScale: function(scale) {
-    this._scale = scale;
+  setPixelSize: function(pixelSize) {
+    this._pixelSize = pixelSize;
 
     this.renderTarget.setSize(
-      Math.floor(this._width / this._scale),
-      Math.floor(this._height / this._scale)
+      Math.floor(this._width / this._pixelSize),
+      Math.floor(this._height / this._pixelSize)
     );
   },
 

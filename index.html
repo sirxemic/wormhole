@@ -32,16 +32,46 @@
     display: block;
     border-radius: 10px;
   }
-  .settings {
+
+  .ui label {
+    cursor: pointer;
+  }
+
+  .renderer-settings {
     position: fixed;
     bottom: 0;
     right: 0;
-    padding: 5px;
     z-index: 10;
     text-align: right;
+    padding: 1em;
   }
-  .settings > label {
+  .renderer-settings > label {
     display: block;
+  }
+
+  .ui-settings {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 10;
+    text-align: left;
+    padding: 1em;
+  }
+
+  .ui {
+    transition: all 0.2s ease;
+  }
+
+  .no-ui .ui {
+    opacity: 0;
+  }
+
+  .no-ui .ui-settings:hover {
+    opacity: 1;
+  }
+
+  .no-ui .renderer-settings {
+    transform: translateX(100%);
   }
   </style>
 </head>
@@ -50,11 +80,15 @@
 <div id="container">
 </div>
 
-<div class="settings">
+<div class="ui renderer-settings">
   <h3>Pixel size</h3>
   <label><input type="radio" name="resolution" value="4" checked> 4x4</label>
   <label><input type="radio" name="resolution" value="2"> 2x2</label>
   <label><input type="radio" name="resolution" value="1"> 1x1</label>
+</div>
+
+<div class="ui ui-settings">
+  <label><input type="checkbox" name="hide-ui"> Hide UI</label>
 </div>
 
 <script type="x-shader/x-vertex" id="vertexShader">
