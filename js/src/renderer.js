@@ -2,8 +2,6 @@ var SceneRenderer = require("./scenerenderer");
 var ScaledRenderer = require("./scaledrenderer");
 
 function Renderer(container, space) {
-  var self = this;
-
   this._webglRenderer = new THREE.WebGLRenderer();
   container.appendChild(this._webglRenderer.domElement);
 

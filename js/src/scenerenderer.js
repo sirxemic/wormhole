@@ -1,6 +1,4 @@
 function SceneRenderer(space, width, height) {
-  var self = this;
-
   // Init variables required for rendering
   this._aspectFix = new THREE.Matrix4();
 
