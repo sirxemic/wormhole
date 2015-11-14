@@ -218,6 +218,9 @@ WormholeSpace.prototype = {
 
       this.tetradToQuaternion(object.__tetrad, object.quaternion);
     }
+
+    // Restrict polar coordinates
+    object.position.z = object.position.z % (Math.PI * 2);
   }
 
 };

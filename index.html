@@ -44,7 +44,10 @@
     padding: 1em;
     max-width: 30em;
   }
-  .renderer-settings > label {
+  .pixel-ratio {
+    float: right;
+  }
+  .pixel-ratio label {
     display: block;
   }
 
@@ -83,6 +86,7 @@
     position: absolute;
     top: 1em;
     left: 50%;
+    -webkit-transform: translateX(-50%);
     transform: translateX(-50%);
     z-index: 20;
     font-size: 14px;
@@ -90,6 +94,7 @@
   }
 
   #introduction.hidden {
+    -webkit-transform: translateY(-120%) translateX(-50%);
     transform: translateY(-120%) translateX(-50%);
   }
 
@@ -116,6 +121,8 @@
 
   .caution {
     color: #f0e033;
+    pointer-events: none;
+    clear: both;
   }
   </style>
 </head>
@@ -131,6 +138,7 @@
     <li><a target="_blank" href="https://sirxemic.github.io/Interstellar">this "Interstellar" thing I made</a>, which is maybe sort of accurate, but in reality is just hacked together without knowing anything about general relativity or differential geometry.
   </ul>
   <p>None of these show what a wormhole with a long "throat" would look like. This simulation does.</p>
+  <p>Side note: on some mobile devices and on PCs with certain GPUs the rendering might be rather grainy. If it happens to you: sorry about that!</p>
   <p class="info">Click anywhere to continue</p>
 </div>
 
@@ -138,11 +146,13 @@
 </div>
 
 <div class="ui renderer-settings">
-  <h3>Pixel ratio</h3>
-  <label><input type="radio" name="resolution" value="4" checked> 1:4</label>
-  <label><input type="radio" name="resolution" value="3"> 1:3</label>
-  <label><input type="radio" name="resolution" value="2"> 1:2</label>
-  <label><input type="radio" name="resolution" value="1"> 1:1</label>
+  <div class="pixel-ratio">
+    <h3>Pixel ratio</h3>
+    <label><input type="radio" name="resolution" value="4" checked> 1:4</label>
+    <label><input type="radio" name="resolution" value="3"> 1:3</label>
+    <label><input type="radio" name="resolution" value="2"> 1:2</label>
+    <label><input type="radio" name="resolution" value="1"> 1:1</label>
+  </div>
   <p class="caution">Caution: depending on the power of your GPU, changing the pixel ratio might slow your browser to a crawl.</p>
 </div>
 

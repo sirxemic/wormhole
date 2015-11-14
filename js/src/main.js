@@ -1,6 +1,7 @@
 var WormholeSpace   = require("./wormholespace");
 var Player          = require("./player");
-var PlayerControls  = require("./playercontrols");
+var PlayerControlsKeyboard = require("./playercontrolskeyboard");
+var PlayerControlsTouch = require("./playercontrolstouch");
 var Renderer        = require("./renderer");
 var UIControls      = require("./uicontrols");
 
@@ -17,7 +18,8 @@ var playerX = wormholeSpace.radius * 2 + wormholeSpace.throatLength;
 player.position.set(playerX, Math.PI * 0.5, 0);
 player.rotateY(-Math.PI * 0.5);
 
-var playerControls = new PlayerControls(player, container);
+var playerControlsKeyboard = new PlayerControlsKeyboard(player, container);
+var playerControlsTouch = new PlayerControlsTouch(player, container);
 
 var clock = new THREE.Clock();
 
@@ -29,7 +31,13 @@ function animate() {
   var delta = clock.getDelta();
   if (delta < 0.001) return;
 
-  playerControls.update(delta);
+  // If delta becomes too big we might get weird stuff happening
+  if (delta > 0.1) {
+    delta = 0.1;
+  }
+
+  playerControlsKeyboard.update(delta);
+  playerControlsTouch.update(delta);
 
   if (player.position.x > maxX) {
     player.position.x = maxX;

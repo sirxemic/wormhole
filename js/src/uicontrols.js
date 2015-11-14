@@ -7,6 +7,7 @@ function UIControls(renderer) {
   uiToggle.addEventListener('change', toggleUI, false);
   window.addEventListener('resize', resizeRenderer, false);
   document.addEventListener('click', removeIntroduction, false);
+  document.addEventListener('touch', removeIntroduction, false);
   document.querySelector('.renderer-settings').addEventListener('change', updatePixelSize, false);
 
   function resizeRenderer() {
@@ -37,7 +38,8 @@ function UIControls(renderer) {
     // When a scrollbar is removed, a resize has to be triggered manually
     resizeRenderer();
 
-    document.removeEventListener('click', removeIntroduction, false)
+    document.removeEventListener('click', removeIntroduction, false);
+    document.removeEventListener('touch', removeIntroduction, false);
   }
 
   function updatePixelSize(event) {
