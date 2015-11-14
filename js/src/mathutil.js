@@ -30,17 +30,15 @@ var MathUtil = {
         throw new Error("0 determinant");
       }
 
-      det = 1.0 / det;
-
-      te[0] = b01 * det;
-      te[1] = (-a22 * a01 + a02 * a21) * det;
-      te[2] = (a12 * a01 - a02 * a11) * det;
-      te[3] = b11 * det;
-      te[4] = (a22 * a00 - a02 * a20) * det;
-      te[5] = (-a12 * a00 + a02 * a10) * det;
-      te[6] = b21 * det;
-      te[7] = (-a21 * a00 + a01 * a20) * det;
-      te[8] = (a11 * a00 - a01 * a10) * det;
+      te[0] = b01;
+      te[1] = -a22 * a01 + a02 * a21;
+      te[2] = a12 * a01 - a02 * a11;
+      te[3] = b11;
+      te[4] = a22 * a00 - a02 * a20;
+      te[5] = -a12 * a00 + a02 * a10;
+      te[6] = b21;
+      te[7] = -a21 * a00 + a01 * a20;
+      te[8] = a11 * a00 - a01 * a10;
 
       target.multiplyScalar( 1.0 / det );
 
