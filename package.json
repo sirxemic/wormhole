@@ -4,7 +4,8 @@
   "description": "Simple wormhole simulation",
   "main": "index.js",
   "scripts": {
-    "dist": "node node_modules/webpack/bin/webpack.js"
+    "dist": "node node_modules/webpack/bin/webpack.js -p",
+    "dev": "node node_modules/webpack/bin/webpack.js --watch"
   },
   "repository": {
     "type": "git",
