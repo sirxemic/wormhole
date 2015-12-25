@@ -204,63 +204,23 @@ struct State3D {
  *  Util
  */
 
-mat3 rotationMatrix(vec3 axis, float angle) {
-  float c = cos(angle),
-        s = sin(angle),
-        t = 1.0 - c,
-        tX = t * axis.x,
-        tY = t * axis.y,
-        tZ = t * axis.z;
+void sphericalToCartesian(vec2 position, vec2 direction, out vec3 outPos, out vec3 outDir) {
+  float sinY = sin(position.y),
+        cosY = cos(position.y),
+        sinX = sin(position.x),
+        cosX = cos(position.x);
 
-  return mat3(
-    tX * axis.x + c, tY * axis.x + s * axis.z, tZ * axis.x - s * axis.y,
-    tX * axis.y - s * axis.z, tY * axis.y + c, tZ * axis.y + s * axis.x,
-    tX * axis.z + s * axis.y, tY * axis.z - s * axis.x, tZ * axis.z + c
+  outPos = vec3(sinY * cosX, -cosY, sinY * sinX);
+  outDir = vec3(
+    -sinY * sinX * direction.x + cosY * cosX * direction.y,
+     sinY * direction.y,
+     sinY * cosX * direction.x + cosY * sinX * direction.y
   );
 }
 
 /**
  *  Integration stuff
  */
-
-// Solve the direct geodesic problem for spheres.
-// That means:
-// given a starting point and an initial heading, find the position after traveling
-// a certain distance (or angle in the case of the unit sphere) along the geodesic.
-void greatCircle(inout vec2 position, inout vec2 direction, float angle) {
-  // Convert position and direction to 3D
-  float sinY = sin(position.y),
-        cosY = cos(position.y),
-        sinX = sin(position.x),
-        cosX = cos(position.x);
-
-  vec3 pos3D = vec3(sinY * cosX, sinY * sinX, cosY);
-  vec3 dir3D = vec3(
-    -sinY * sinX * direction.x + cosY * cosX * direction.y,
-     sinY * cosX * direction.x + cosY * sinX * direction.y,
-    -sinY * direction.y
-  );
-
-  // Rotate position and direction
-  vec3 axis = cross(pos3D, normalize(dir3D));
-  mat3 rotation = rotationMatrix(axis, angle);
-
-  pos3D = rotation * pos3D;
-  dir3D = rotation * dir3D;
-
-  // Convert position and direction back to 2D
-  position = vec2(
-    atan(pos3D.y, pos3D.x),
-    acos(clamp(pos3D.z, -1.0, 1.0))
-  );
-
-  float xy = 1.0 / dot(pos3D.xy, pos3D.xy);
-
-  direction = vec2(
-    (pos3D.x * dir3D.y - pos3D.y * dir3D.x) * xy,
-    -dir3D.z
-  ) * xy;
-}
 
 // Do an integration step in 2D wormhole space.
 void step2D(inout State2D ray) {
@@ -274,19 +234,19 @@ void step2D(inout State2D ray) {
 
     // Use backwards euler integration
     float h = delta,
-        h2 = h * h,
-        x = (ray.position.x / abs(ray.position.x)) * distanceToWormhole,
-        x2 = x * x,
-        b2 = uRadiusSquared,
-        dx = ray.direction.x,
-        dx2 = dx * dx,
-        dy = ray.direction.y,
-        dy2 = dy * dy,
+          h2 = h * h,
+          x = (ray.position.x / abs(ray.position.x)) * distanceToWormhole,
+          x2 = x * x,
+          b2 = uRadiusSquared,
+          dx = ray.direction.x,
+          dx2 = dx * dx,
+          dy = ray.direction.y,
+          dy2 = dy * dy,
 
-        r2 = b2 + x2,
-        hdx = h * dx,
-        s = 2.0 * x * hdx,
-        t = h2 * (b2 - 3.0 * x2);
+          r2 = b2 + x2,
+          hdx = h * dx,
+          s = 2.0 * x * hdx,
+          t = h2 * (b2 - 3.0 * x2);
 
     vec2 directionDelta = vec2(
         dy * (x * r2 * r2 - 2.0 * x * t * dx2 + (b2 * b2 - x2 * x2) * hdx),
@@ -341,9 +301,21 @@ void integrate2D(inout State2D ray) {
 }
 
 // Integrate!
-void integrate3D(inout State3D ray) {
+void integrate3D(inout State3D ray, out vec3 cubeCoord) {
+  // We integrate in a 2D plane so we don't have to deal with the poles of spherical coordinates, where
+  // integration might go out of hand.
+
+  // Determine the X- and Y-axes in this plane
+  vec3 pos3D, dir3D, axisX, axisY, axisZ;
+  sphericalToCartesian(ray.position.zy, ray.direction.zy, pos3D, dir3D);
+
+  axisX = normalize(pos3D);
+  axisZ = cross(axisX, normalize(dir3D));
+  axisY = cross(axisZ, axisX);
+
   float distanceToWormhole = max(0.0, abs(ray.position.x) - uThroatLength);
 
+  // 2D integration happens at spherical coordinate (originalX, 0) on this plane.
   State2D ray2D;
   ray2D.position = vec2(ray.position.x, 0.0);
   ray2D.direction = vec2(
@@ -352,18 +324,17 @@ void integrate3D(inout State3D ray) {
   );
   ray2D.distance = ray.distance;
 
-  // Integrate in a 2D plane so we don't have to deal with the poles of spherical coordinates. This works
-  // because all geodesics around a wormhole lie in a plane...
-  // ...that was the idea, but I still get artifacts around the poles. Oh well...
   integrate2D(ray2D);
 
+  // Compute the end-direction in cartesian space
+  distanceToWormhole = max(0.0, abs(ray2D.position.x) - uThroatLength);
+  float r = distanceToWormhole * (ray2D.position.x / abs(ray2D.position.x));
+  cubeCoord = axisX * (ray2D.direction.x * cos(ray2D.position.y) - r * ray2D.direction.y * sin(ray2D.position.y)) +
+              axisY * (ray2D.direction.x * sin(ray2D.position.y) + r * ray2D.direction.y * cos(ray2D.position.y));
+
   // Transform the 2D position and direction back into 3D
+  // Though only position.x is used, we don't transform the other ray attributes
   ray.position.x = ray2D.position.x;
-  ray.direction.x = ray2D.direction.x;
-
-  greatCircle(ray.position.zy, ray.direction.zy, ray2D.position.y);
-
-  ray.direction.yz = normalize(ray.direction.yz) * ray2D.direction.y;
 
   ray.distance = ray2D.distance;
 }
@@ -379,27 +350,9 @@ void adjustDirection(inout State3D ray) {
 }
 
 // Get the final color given a position and direction.
-vec4 getColor(State3D ray) {
-  float distanceToWormhole = max(0.0, abs(ray.position.x) - uThroatLength);
-
-  if (distanceToWormhole == 0.0) {
-    return vec4(0.0, 0.0, 0.0, 1.0);
-  }
-
-  float sinY = sin(ray.position.y),
-        cosY = cos(ray.position.y),
-        sinZ = sin(ray.position.z),
-        cosZ = cos(ray.position.z),
-        r = distanceToWormhole * (ray.position.x / abs(ray.position.x));
-
-  vec3 cubeDir = vec3(
-     ray.direction.x * sinY * cosZ - r * sinY * sinZ * ray.direction.z + r * cosY * cosZ * ray.direction.y,
-    -ray.direction.x * cosY + r * sinY * ray.direction.y,
-     ray.direction.x * sinY * sinZ + r * sinY * cosZ * ray.direction.z + r * cosY * sinZ * ray.direction.y
-  );
-
-  vec4 skybox1Color = textureCube(uSkybox1, cubeDir);
-  vec4 skybox2Color = textureCube(uSkybox2, cubeDir);
+vec4 getColor(State3D ray, vec3 cubeCoord) {
+  vec4 skybox1Color = textureCube(uSkybox1, cubeCoord);
+  vec4 skybox2Color = textureCube(uSkybox2, cubeCoord);
 
   float merge = 0.5 - clamp(ray.position.x, -0.5, 0.5);
   vec4 color = mix(skybox1Color, skybox2Color, merge);
@@ -407,6 +360,7 @@ vec4 getColor(State3D ray) {
   // Prettify the thing where everything becomes infinite
   const float cutoffStart = 150.0;
   const float cutoffEnd = 800.0;
+
   if (ray.distance > cutoffStart) {
     color *= max(0.0, (cutoffEnd - ray.distance) / (cutoffEnd - cutoffStart));
   }
@@ -421,14 +375,14 @@ void main()
   ray.direction = normalize(vRayDir);
   ray.distance = 0.0;
 
-  // At this point rayDir makes sense in flat spacetime, but in curved space time
-  // it needs to be slightly adjusted.
   adjustDirection(ray);
 
-  // Integrate in wormhole space coordinates
-  integrate3D(ray);
+  vec3 cubeCoord;
 
-  gl_FragColor = getColor(ray);
+  // Integrate in wormhole space coordinates
+  integrate3D(ray, cubeCoord);
+
+  gl_FragColor = getColor(ray, cubeCoord);
 }
 </script>
 <script src="js/lib/three.min.js"></script>
