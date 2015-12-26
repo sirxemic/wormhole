@@ -1,30 +1,26 @@
-function UIControls(renderer) {
+function UIControls(options) {
   var uiToggle = document.querySelector('[name=hide-ui]');
 
-  toggleUI();
-
-  // Bind all kinds of events
-  uiToggle.addEventListener('change', toggleUI, false);
-  window.addEventListener('resize', resizeRenderer, false);
-  document.addEventListener('click', removeIntroduction, false);
-  document.addEventListener('touch', removeIntroduction, false);
-  document.querySelector('.renderer-settings').addEventListener('change', updatePixelSize, false);
+  function uiVisible() {
+    return uiToggle.checked;
+  }
 
   function resizeRenderer() {
-    renderer.resize();
+    options.renderer.resize();
   }
 
   function toggleUI(event) {
     uiToggle.blur();
 
-    if (uiToggle.checked) {
+    if (uiVisible()) {
       document.body.classList.add('no-ui');
-      renderer.showDiagram = false;
     }
     else {
       document.body.classList.remove('no-ui');
-      renderer.showDiagram = true;
     }
+
+    updateDiagramVisibility();
+    updateFreeMovement();
   }
 
   function removeIntroduction(event) {
@@ -42,11 +38,37 @@ function UIControls(renderer) {
     document.removeEventListener('touch', removeIntroduction, false);
   }
 
+  function updateFreeMovement() {
+    var freeMovement = uiVisible();
+
+    if (!freeMovement) {
+      // Reset the player
+      options.resetPlayer();
+    }
+
+    options.playerControls.forEach(function(playerControl) {
+      playerControl.freeMovement = freeMovement
+    });
+  }
+
+  function updateDiagramVisibility() {
+    options.renderer.showDiagram = !uiVisible();
+  }
+
   function updatePixelSize(event) {
-    renderer.updatePixelSize();
+    options.renderer.updatePixelSize();
 
     event.target.blur();
   }
+
+  // Bind all kinds of events
+  uiToggle.addEventListener('change', toggleUI, false);
+  window.addEventListener('resize', resizeRenderer, false);
+  document.addEventListener('click', removeIntroduction, false);
+  document.addEventListener('touch', removeIntroduction, false);
+  document.querySelector('.renderer-settings').addEventListener('change', updatePixelSize, false);
+
+  toggleUI();
 }
 
 module.exports = UIControls;

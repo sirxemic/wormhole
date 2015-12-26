@@ -18,8 +18,10 @@ var playerX = wormholeSpace.radius * 2 + wormholeSpace.throatLength;
 player.position.set(playerX, Math.PI * 0.5, 0);
 player.rotateY(-Math.PI * 0.5);
 
-var playerControlsKeyboard = new PlayerControlsKeyboard(player, container);
-var playerControlsTouch = new PlayerControlsTouch(player, container);
+var playerControls = [
+  new PlayerControlsKeyboard(player, container),
+  new PlayerControlsTouch(player, container)
+];
 
 var clock = new THREE.Clock();
 
@@ -36,8 +38,9 @@ function animate() {
     delta = 0.1;
   }
 
-  playerControlsKeyboard.update(delta);
-  playerControlsTouch.update(delta);
+  playerControls.forEach(function(playerControl) {
+    playerControl.update(delta);
+  });
 
   if (player.position.x > maxX) {
     player.position.x = maxX;
@@ -55,4 +58,13 @@ function render() {
 
 animate();
 
-new UIControls(renderer);
+new UIControls({
+  renderer: renderer,
+  playerControls: playerControls,
+  resetPlayer: function resetPlayer() {
+    player.position.y = Math.PI * 0.5;
+    player.quaternion.x = 0;
+    player.quaternion.z = 0;
+    player.quaternion.normalize();
+  }
+});

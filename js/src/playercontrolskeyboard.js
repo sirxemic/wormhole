@@ -17,7 +17,10 @@ function PlayerControlsKeyboard(player, domElement)
 
   function onMouseMove(e) {
     self.rotationSpeedX += 4 * (e.movementX || e.mozMovementX || e.webkitMovementX || 0);
-    // self.rotationSpeedY += 4 * (e.movementY || e.mozMovementY || e.webkitMovementY || 0);
+    
+    if (self.freeMovement) {
+      self.rotationSpeedY += 4 * (e.movementY || e.mozMovementY || e.webkitMovementY || 0);
+    }
   }
 
   function onKeyDown(e) {
@@ -93,17 +96,17 @@ PlayerControlsKeyboard.prototype._updateOrientation = function(delta) {
 
   this.player.quaternion.multiply(rotation);
   
-  /*
-  if (this.rotateLeft) {
-    rotation.setFromAxisAngle(new THREE.Vector3(0, 0, 1), delta);
-    this.player.quaternion.multiply(rotation);
-  }
+  if (this.freeMovement) {
+    if (this.rotateLeft) {
+      rotation.setFromAxisAngle(new THREE.Vector3(0, 0, 1), delta);
+      this.player.quaternion.multiply(rotation);
+    }
 
-  if (this.rotateRight) {
-    rotation.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -delta);
-    this.player.quaternion.multiply(rotation);
+    if (this.rotateRight) {
+      rotation.setFromAxisAngle(new THREE.Vector3(0, 0, 1), -delta);
+      this.player.quaternion.multiply(rotation);
+    }
   }
-  */
 };
 
 PlayerControlsKeyboard.prototype._updateVelocity = function(delta) {
@@ -125,15 +128,15 @@ PlayerControlsKeyboard.prototype._updateVelocity = function(delta) {
     this.velocity.add(new THREE.Vector3(1, 0, 0));
   }
   
-  /*
-  if (this.moveUp) {
-    this.velocity.add(new THREE.Vector3(0, 1, 0));
-  }
+  if (this.freeMovement) {
+    if (this.moveUp) {
+      this.velocity.add(new THREE.Vector3(0, 1, 0));
+    }
 
-  if (this.moveDown) {
-    this.velocity.add(new THREE.Vector3(0, -1, 0));
+    if (this.moveDown) {
+      this.velocity.add(new THREE.Vector3(0, -1, 0));
+    }
   }
-  */
 
   if (this.velocity.lengthSq() > 0) {
     this.velocity.normalize();
