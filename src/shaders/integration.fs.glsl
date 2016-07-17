@@ -116,5 +116,13 @@ void main()
     ray.direction.x * sin(ray.position.y) + r * ray.direction.y * cos(ray.position.y)
   );
 
-  gl_FragColor = vec4(finalDirection, ray.position.x, ray.distance);
+  #if RENDER_TO_FLOAT_TEXTURE
+    gl_FragColor = vec4(finalDirection, ray.position.x, ray.distance);
+  #else
+    gl_FragColor = vec4(
+      normalize(finalDirection) * 0.5 + 0.5,
+      clamp(ray.position.x, -0.5, 0.5) + 0.5,
+      ray.distance * 0.001
+    );
+  #endif
 }

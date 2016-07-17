@@ -56,6 +56,12 @@ void integrate3D(inout State3D ray, out vec3 cubeCoord) {
   float x = (theta - uAngleRange.x) / (uAngleRange.y - uAngleRange.x);
   vec4 finalIntegrationState = texture2D(uIntegrationBuffer, vec2(x, 0.5));
 
+  #if !RENDER_TO_FLOAT_TEXTURE
+    finalIntegrationState.xy = finalIntegrationState.xy * 2.0 - 1.0;
+    finalIntegrationState.z -= 0.5;
+    finalIntegrationState.w *= 1000.0;
+  #endif
+
   // Compute the end-direction in cartesian space
   cubeCoord = axisX * finalIntegrationState.x + axisY * finalIntegrationState.y;
 

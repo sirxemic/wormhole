@@ -1,6 +1,10 @@
 var THREE = require("three");
 
-var PixelShaderRenderer = require('./pixelshaderrenderer');
+var PixelShaderRenderer = require("./pixelshaderrenderer");
+
+var floatRenderTargetSupported = require("../util/glsupport").floatRenderTargetSupported;
+
+console.log("Rendering to floating-point rendertargets supported:", floatRenderTargetSupported);
 
 function SceneRenderer(space) {
 
@@ -32,18 +36,26 @@ function SceneRenderer(space) {
     uAngleRange: { type: "v2", value: new THREE.Vector2() },
   };
 
+  // Init defines
+  var commonDefines = {
+    RENDER_TO_FLOAT_TEXTURE: ~~floatRenderTargetSupported
+  };
+
   // Init integration stuff
   this._integrationBuffer = new THREE.WebGLRenderTarget(2048, 1, {
     wrapS: THREE.ClampToEdgeWrapping,
     wrapT: THREE.ClampToEdgeWrapping,
     format: THREE.RGBAFormat,
-    type: THREE.FloatType
+    type: floatRenderTargetSupported ? THREE.FloatType : THREE.UnsignedByteType
   });
 
   var integrationShader = new THREE.RawShaderMaterial({
     uniforms: Object.assign({}, this.commonUniforms),
-    vertexShader: require('../shaders/integration.vs.glsl'),
-    fragmentShader: require('../shaders/integration.fs.glsl')
+    defines: commonDefines,
+
+    // Prepend with a newline as a workaround due to a THREE.js bug
+    vertexShader: "\n" + require('../shaders/integration.vs.glsl'),
+    fragmentShader: "\n" + require('../shaders/integration.fs.glsl')
   });
 
   this._integrationStep = new PixelShaderRenderer(integrationShader);
@@ -55,8 +67,11 @@ function SceneRenderer(space) {
       uSkybox1: { type: "t", value: skybox1 },
       uSkybox2: { type: "t", value: skybox2 }
     }, this.commonUniforms),
-    vertexShader: require('../shaders/render.vs.glsl'),
-    fragmentShader: require('../shaders/render.fs.glsl')
+    defines: commonDefines,
+
+    // Prepend with a newline as a workaround due to a THREE.js bug
+    vertexShader: "\n" + require('../shaders/render.vs.glsl'),
+    fragmentShader: "\n" + require('../shaders/render.fs.glsl')
   });
 
   this._renderStep = new PixelShaderRenderer(renderShader);
