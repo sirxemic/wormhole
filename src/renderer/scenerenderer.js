@@ -23,13 +23,16 @@ function SceneRenderer(space) {
   var skybox1 = loadSkybox("textures/skybox1/"),
       skybox2 = loadSkybox("textures/skybox2/");
 
+  // Init uniforms
   this.commonUniforms = {
     uRadiusSquared: { type: "f", value: space.radiusSquared },
     uThroatLength: { type: "f", value: space.throatLength },
     uCameraPosition: { type: "v3", value: new THREE.Vector3() },
     uCameraOrientation: { type: "m4", value: new THREE.Matrix4() },
+    uAngleRange: { type: "v2", value: new THREE.Vector2() },
   };
 
+  // Init integration stuff
   this._integrationBuffer = new THREE.WebGLRenderTarget(2048, 1, {
     wrapS: THREE.ClampToEdgeWrapping,
     wrapT: THREE.ClampToEdgeWrapping,
@@ -45,9 +48,10 @@ function SceneRenderer(space) {
 
   this._integrationStep = new PixelShaderRenderer(integrationShader);
 
+  // Init render stuff
   var renderShader = new THREE.RawShaderMaterial({
     uniforms: Object.assign({
-      uIntegrationBuffer: { type: "t", value: this._integrationBuffer },
+      uIntegrationBuffer: { type: "t", value: this._integrationBuffer.texture },
       uSkybox1: { type: "t", value: skybox1 },
       uSkybox2: { type: "t", value: skybox2 }
     }, this.commonUniforms),
@@ -57,20 +61,40 @@ function SceneRenderer(space) {
 
   this._renderStep = new PixelShaderRenderer(renderShader);
 
-  // Init variables required for rendering
+  // The minimum field of view (horizontal and vertical)
+  this._minFov = 1.0;
+
+  // Variables required for rendering
   this._aspectFix = new THREE.Matrix4();
 }
 
 SceneRenderer.prototype = {
 
   render: function(renderer, camera) {
-    this.commonUniforms.uCameraPosition.value.copy(camera.position);
 
-    this.commonUniforms.uCameraOrientation.value.makeRotationFromQuaternion(camera.quaternion);
+    // Update the angle range
+    var orientation = new THREE.Matrix4;
+    orientation.makeRotationFromQuaternion(camera.quaternion);
+
+    var zAxis = new THREE.Vector3;
+    zAxis.setFromMatrixColumn(orientation, 2);
+
+    var angleFromZ = zAxis.angleTo(new THREE.Vector3(1, 0, 0));
+
+    this.commonUniforms.uAngleRange.value.set(
+      Math.max(0, angleFromZ - this._halfDiagFov),
+      Math.min(Math.PI, angleFromZ + this._halfDiagFov)
+    );
+
+    // Update the camera-related uniforms
+    this.commonUniforms.uCameraPosition.value.copy(camera.position);
+    this.commonUniforms.uCameraOrientation.value.copy(orientation);
     this.commonUniforms.uCameraOrientation.value.multiply(this._aspectFix);
 
-     this._integrationStep.render(renderer, this._integrationBuffer);
+    // Integrate...
+    this._integrationStep.render(renderer, this._integrationBuffer);
 
+    // And render.
     this._renderStep.render(renderer);
   },
 
@@ -90,9 +114,15 @@ SceneRenderer.prototype = {
       vy = height / width;
     }
 
+    var tanHalfFov = Math.tan(this._minFov / 2);
+    var vz = 1 / tanHalfFov;
+
+    // Half the diagonal FOV
+    this._halfDiagFov = Math.atan(Math.sqrt(vx * vx + vy * vy) * tanHalfFov);
+
     this._aspectFix.set(vx,  0, 0, 0,
                         0, vy, 0, 0,
-                        0,  0, 2, 0,
+                        0,  0, vz, 0,
                         0,  0, 0, 1);
   }
 

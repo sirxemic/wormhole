@@ -11,6 +11,8 @@ uniform sampler2D uIntegrationBuffer;
 uniform samplerCube uSkybox1;
 uniform samplerCube uSkybox2;
 
+uniform vec2 uAngleRange;
+
 varying vec3 vRayDir;
 
 struct State3D {
@@ -51,7 +53,7 @@ void integrate3D(inout State3D ray, out vec3 cubeCoord) {
   axisY = cross(axisZ, axisX);
 
   float theta = acos(ray.direction.x);
-  float x = theta * INV_PI;
+  float x = (theta - uAngleRange.x) / (uAngleRange.y - uAngleRange.x);
   vec4 finalIntegrationState = texture2D(uIntegrationBuffer, vec2(x, 0.5));
 
   // Compute the end-direction in cartesian space
