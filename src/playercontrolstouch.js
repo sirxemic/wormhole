@@ -49,7 +49,7 @@ function PlayerControlsTouch(player, domElement)
   function addRotationSpeed(touch) {
     var touchInfo = currentTouches[touch.identifier];
 
-    self.rotationSpeedX -= 4 * (touchInfo.current.x - touchInfo.previous.x) / domElement.clientHeight;
+    self.rotationSpeedX -= 6 * (touchInfo.current.x - touchInfo.previous.x) / domElement.clientHeight;
   }
 
   function addVelocityTouch(touch) {
