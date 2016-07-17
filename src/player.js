@@ -1,3 +1,5 @@
+var THREE = require("three");
+
 function Player(space) {
   THREE.Object3D.apply(this);
 

@@ -1,3 +1,5 @@
+var THREE = require("three");
+
 var PlayerControls = require('./playercontrols');
 
 function PlayerControlsTouch(player, domElement)
@@ -60,7 +62,7 @@ function PlayerControlsTouch(player, domElement)
     velocityTouches[touch.identifier] = true;
   }
 
-  function removeVelocityTouch(touch) { 
+  function removeVelocityTouch(touch) {
     delete velocityTouches[touch.identifier];
 
     if (Object.keys(velocityTouches).length === 0) {

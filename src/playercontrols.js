@@ -1,3 +1,5 @@
+var THREE = require("three");
+
 function PlayerControls(player, domElement)
 {
   this.player = player;

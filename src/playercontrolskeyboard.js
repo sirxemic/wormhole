@@ -1,3 +1,5 @@
+var THREE = require("three");
+
 var PlayerControls = require('./playercontrols');
 
 function PlayerControlsKeyboard(player, domElement)
@@ -17,7 +19,7 @@ function PlayerControlsKeyboard(player, domElement)
 
   function onMouseMove(e) {
     self.rotationSpeedX += 4 * (e.movementX || e.mozMovementX || e.webkitMovementX || 0);
-    
+
     if (self.freeMovement) {
       self.rotationSpeedY += 4 * (e.movementY || e.mozMovementY || e.webkitMovementY || 0);
     }
@@ -95,7 +97,7 @@ PlayerControlsKeyboard.prototype._updateOrientation = function(delta) {
   rotation.setFromUnitVectors(new THREE.Vector3(0, 0, 1), movementVector);
 
   this.player.quaternion.multiply(rotation);
-  
+
   if (this.freeMovement) {
     if (this.rotateLeft) {
       rotation.setFromAxisAngle(new THREE.Vector3(0, 0, 1), delta);
@@ -127,7 +129,7 @@ PlayerControlsKeyboard.prototype._updateVelocity = function(delta) {
   if (this.moveRight) {
     this.velocity.add(new THREE.Vector3(1, 0, 0));
   }
-  
+
   if (this.freeMovement) {
     if (this.moveUp) {
       this.velocity.add(new THREE.Vector3(0, 1, 0));

@@ -1,3 +1,4 @@
+var THREE = require("three");
 var MathUtil = require("./mathutil");
 
 function WormholeSpace(radius, throatLength)

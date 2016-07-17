@@ -55,18 +55,11 @@ function UIControls(options) {
     options.renderer.showDiagram = !uiVisible();
   }
 
-  function updatePixelSize(event) {
-    options.renderer.updatePixelSize();
-
-    event.target.blur();
-  }
-
   // Bind all kinds of events
   uiToggle.addEventListener('change', toggleUI, false);
   window.addEventListener('resize', resizeRenderer, false);
   document.addEventListener('click', removeIntroduction, false);
   document.addEventListener('touch', removeIntroduction, false);
-  document.querySelector('.renderer-settings').addEventListener('change', updatePixelSize, false);
 
   toggleUI();
 }

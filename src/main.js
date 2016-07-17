@@ -1,3 +1,5 @@
+var THREE = require("three");
+
 var WormholeSpace   = require("./wormholespace");
 var Player          = require("./player");
 var PlayerControlsKeyboard = require("./playercontrolskeyboard");

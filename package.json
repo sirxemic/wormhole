@@ -4,8 +4,8 @@
   "description": "Simple wormhole simulation",
   "main": "index.js",
   "scripts": {
-    "dist": "node node_modules/webpack/bin/webpack.js -p",
-    "dev": "node node_modules/webpack/bin/webpack.js --watch"
+    "dist": "webpack -p",
+    "dev": "webpack --watch"
   },
   "repository": {
     "type": "git",
@@ -23,6 +23,10 @@
     "url": "https://github.com/sirxemic/wormhole/issues"
   },
   "devDependencies": {
-    "webpack": "^1.12.4"
+    "webpack": "^1.12.4",
+    "webpack-glsl-loader": "^1.0.1"
+  },
+  "dependencies": {
+    "three": "^0.79.0"
   }
 }
