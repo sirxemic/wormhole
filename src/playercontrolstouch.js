@@ -23,6 +23,9 @@ function PlayerControlsTouch(player, domElement)
   domElement.addEventListener('touchcancel', touchEnd, false);
 
   function touchStart(event) {
+    // Preventing default behavior so that the user doesn't accidentally scroll the viewport
+    event.preventDefault();
+
     // A touch is a sign that touch controls can be used.
     self.active = true;
 

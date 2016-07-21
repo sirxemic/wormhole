@@ -1,12 +1,13 @@
-function UIControls(options) {
+function setupUiToggle(options) {
   var uiToggle = document.querySelector('[name=hide-ui]');
+
+  // Free movement is not supported on touch devices
+  document.addEventListener('touchstart', function() {
+    document.body.classList.add('no-ui');
+  }, false);
 
   function uiVisible() {
     return uiToggle.checked;
-  }
-
-  function resizeRenderer() {
-    options.renderer.resize();
   }
 
   function toggleUI(event) {
@@ -21,21 +22,6 @@ function UIControls(options) {
 
     updateDiagramVisibility();
     updateFreeMovement();
-  }
-
-  function removeIntroduction(event) {
-    // Ignore clicks on links
-    if (event.target.href) {
-      return;
-    }
-
-    document.querySelector('#introduction').classList.add('hidden');
-
-    // When a scrollbar is removed, a resize has to be triggered manually
-    resizeRenderer();
-
-    document.removeEventListener('click', removeIntroduction, false);
-    document.removeEventListener('touch', removeIntroduction, false);
   }
 
   function updateFreeMovement() {
@@ -55,13 +41,29 @@ function UIControls(options) {
     options.renderer.showDiagram = !uiVisible();
   }
 
-  // Bind all kinds of events
   uiToggle.addEventListener('change', toggleUI, false);
-  window.addEventListener('resize', resizeRenderer, false);
-  document.addEventListener('click', removeIntroduction, false);
-  document.addEventListener('touch', removeIntroduction, false);
 
   toggleUI();
 }
 
-module.exports = UIControls;
+function setupIntroductionModal(options) {
+  var main = document.querySelector('#main');
+
+  function removeIntroduction(event) {
+    // Ignore clicks on links
+    if (event.target.href) {
+      return;
+    }
+
+    document.querySelector('#introduction').classList.add('hidden');
+
+    main.removeEventListener('click', removeIntroduction, false);
+  }
+
+  main.addEventListener('click', removeIntroduction, false);
+}
+
+module.exports = {
+  setupUiToggle: setupUiToggle,
+  setupIntroductionModal: setupIntroductionModal
+};

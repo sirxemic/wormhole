@@ -3,31 +3,82 @@
 <head>
   <title>Wormhole simulation</title>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
   <style>
   *, *::before, *::after {
     margin: 0;
     box-sizing: border-box;
   }
+
   body, html {
     width: 100%;
     height: 100%;
   }
+
   body {
-    margin: 0;
     background: #000;
     color: #fff;
     font-size: 12px;
     font-family: sans-serif;
+    overflow: hidden;
   }
-  #container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+
+  .wrapper {
+    height: 101%;
   }
+
+  .main {
+    position: relative;
+    height: 100vh;
+  }
+
   canvas {
     display: block;
+  }
+
+  #introduction {
+    width: 100%;
+    max-width: 600px;
+    max-height: 100vh;
+    overflow: auto;
+    padding: 1.5em;
+    -webkit-overflow-scrolling: touch;
+    font-size: 14px;
+    background: rgba(20,20,20, 0.95);
+    box-shadow: 0 10px 20px #000;
+    position: absolute;
+    left: 50%;
+    -webkit-transform: translateX(-50%);
+    transform: translateX(-50%);
+    z-index: 20;
+    transition: transform 0.5s cubic-bezier(.35,-0.29,.25,1);
+  }
+
+  #introduction.hidden {
+    -webkit-transform: translateY(-120%) translateX(-50%);
+    transform: translateY(-120%) translateX(-50%);
+  }
+
+  #introduction h1 {
+    margin-bottom: 1em;
+    text-align: center;
+  }
+
+  #introduction p, #introduction ul {
+    line-height: 1.5;
+    margin: 0 0 1em;
+  }
+
+  #introduction a {
+    color: #387aff;
+  }
+
+  #introduction .info {
+    color: #888;
+    text-align: center;
+    border-top: 1px solid #000;
+    padding: 1em 0;
+    margin: 0;
   }
 
   .ui label {
@@ -59,72 +110,30 @@
   .no-ui .renderer-settings {
     transform: translateX(100%);
   }
-
-  #introduction {
-    width: 100%;
-    max-width: 600px;
-    background: rgba(20,20,20, 0.95);
-    box-shadow: 0 10px 20px #000;
-    padding: 1.5em;
-    position: absolute;
-    top: 1em;
-    left: 50%;
-    -webkit-transform: translateX(-50%);
-    transform: translateX(-50%);
-    z-index: 20;
-    font-size: 14px;
-    transition: transform 0.5s cubic-bezier(.35,-0.29,.25,1);
-  }
-
-  #introduction.hidden {
-    -webkit-transform: translateY(-120%) translateX(-50%);
-    transform: translateY(-120%) translateX(-50%);
-  }
-
-  #introduction h1 {
-    margin-bottom: 1em;
-    text-align: center;
-  }
-
-  #introduction p, #introduction ul {
-    line-height: 1.5;
-    margin: 0 0 1em;
-  }
-
-  #introduction a {
-    color: #387aff;
-  }
-
-  .info {
-    color: #888;
-    text-align: center;
-    border-top: 1px solid #000;
-    padding-top: 1em;
-  }
-
   </style>
 </head>
 <body>
 
-<div id="introduction">
-  <h1>Travel through a wormhole</h1>
-  <p>So on the internet it's kind of hard to get a realistic impression of what travelling through a wormhole could look like. If you look around a bit you'll find things like:
-  </p>
-  <ul>
-    <li><a target="_blank" href="https://www.youtube.com/watch?v=8tX7KQSKMtQ">this wormhole simulation video</a> based on the actual maths of general relativity,
-    <li><a target="_blank" href="https://www.youtube.com/watch?v=Ln2SGm9gEuE">this scene of the movie "Interstellar"</a>, which is epic but completely inaccurate for the interior (the exterior seems legit), and
-    <li><a target="_blank" href="https://sirxemic.github.io/Interstellar">this "Interstellar" thing I made</a>, which is maybe sort of accurate, but in reality is just hacked together without knowing anything about general relativity or differential geometry.
-  </ul>
-  <p>None of these show what a wormhole with a long "throat" would look like. This simulation does.</p>
-  <p>Side note: on some mobile devices and on PCs with certain GPUs the rendering might be rather grainy. If it happens to you: sorry about that!</p>
-  <p class="info">Click anywhere to continue</p>
-</div>
+<div class="wrapper">
+  <div id="main">
+    <div id="introduction">
+      <h1>Travel through a wormhole</h1>
+      <p>So on the internet it's kind of hard to get a realistic impression of what travelling through a wormhole could look like. If you look around a bit you'll find things like:
+      </p>
+      <ul>
+        <li><a target="_blank" href="https://www.youtube.com/watch?v=8tX7KQSKMtQ">this wormhole simulation video</a> based on the actual maths of general relativity,</li>
+        <li><a target="_blank" href="https://www.youtube.com/watch?v=Ln2SGm9gEuE">this scene of the movie "Interstellar"</a>, which is epic but completely inaccurate for the interior (the exterior seems legit), and</li>
+        <li><a target="_blank" href="https://sirxemic.github.io/Interstellar">this "Interstellar" thing I made</a>, which is maybe sort of accurate, but in reality is just hacked together without knowing anything about general relativity or differential geometry.</li>
+      </ul>
+      <p>None of these show what a wormhole with a long "throat" would look like. This simulation does.</p>
+      <p>Side note: on some mobile devices and on PCs with certain GPUs the rendering might be rather grainy. If it happens to you: sorry about that!</p>
+      <p class="info">Click anywhere to continue</p>
+    </div>
 
-<div id="container">
-</div>
-
-<div class="ui ui-settings">
-  <label><input type="checkbox" name="hide-ui"> Hide UI &amp; enable free movement</label>
+    <div class="ui ui-settings">
+      <label><input type="checkbox" name="hide-ui"> Hide UI &amp; enable free movement</label>
+    </div>
+  </div>
 </div>
 
 <script src="dist/dist.js"></script>

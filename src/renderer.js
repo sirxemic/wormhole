@@ -3,32 +3,34 @@ var THREE = require("three");
 var SceneRenderer = require("./renderer/scenerenderer");
 var DiagramRenderer = require("./renderer/diagramrenderer");
 
-function Renderer(container, space, diagramMax) {
+function Renderer(space, diagramMax) {
   this._webglRenderer = new THREE.WebGLRenderer();
+  this._webglRenderer.setPixelRatio(window.devicePixelRatio);
 
   this._webglRenderer.autoClear = false;
 
   this.showDiagram = true;
 
-  container.appendChild(this._webglRenderer.domElement);
+  this.canvas = this._webglRenderer.domElement
 
-  this._container = container;
   this._space = space;
 
   this._sceneRenderer = new SceneRenderer(space, this._getWidth(), this._getHeight());
   this._diagramRenderer = new DiagramRenderer(space, diagramMax);
 
   this.resize();
+
+  window.addEventListener('resize', this.resize.bind(this), false);
 }
 
 Renderer.prototype = {
 
   _getWidth: function() {
-    return this._container.clientWidth;
+    return window.innerWidth;
   },
 
   _getHeight: function() {
-    return this._container.clientHeight;
+    return window.innerHeight;
   },
 
   render: function(camera) {

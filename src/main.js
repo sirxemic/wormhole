@@ -5,9 +5,9 @@ var Player          = require("./player");
 var PlayerControlsKeyboard = require("./playercontrolskeyboard");
 var PlayerControlsTouch = require("./playercontrolstouch");
 var Renderer        = require("./renderer");
-var UIControls      = require("./uicontrols");
+var UI              = require("./ui");
 
-var container = document.querySelector('#container');
+var container = document.querySelector('#main');
 
 var wormholeSpace = new WormholeSpace(1.4, 5);
 
@@ -20,14 +20,16 @@ var playerX = wormholeSpace.radius * 2 + wormholeSpace.throatLength;
 player.position.set(playerX, Math.PI * 0.5, 0);
 player.rotateY(-Math.PI * 0.5);
 
-var playerControls = [
-  new PlayerControlsKeyboard(player, container),
-  new PlayerControlsTouch(player, container)
-];
-
 var clock = new THREE.Clock();
 
-var renderer = new Renderer(container, wormholeSpace, maxX);
+var renderer = new Renderer(wormholeSpace, maxX);
+
+container.appendChild(renderer.canvas);
+
+var playerControls = [
+  new PlayerControlsKeyboard(player, renderer.canvas),
+  new PlayerControlsTouch(player, renderer.canvas)
+];
 
 function animate() {
   requestAnimationFrame(animate);
@@ -60,7 +62,7 @@ function render() {
 
 animate();
 
-new UIControls({
+UI.setupUiToggle({
   renderer: renderer,
   playerControls: playerControls,
   resetPlayer: function resetPlayer() {
@@ -70,3 +72,5 @@ new UIControls({
     player.quaternion.normalize();
   }
 });
+
+UI.setupIntroductionModal();
