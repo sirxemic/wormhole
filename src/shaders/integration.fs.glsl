@@ -96,13 +96,14 @@ void main()
   float distanceToWormhole = max(0.0, abs(uCameraPosition.x) - uThroatLength);
 
   float directionX = cos(vTheta);
+  float sinTheta = sin(vTheta);
 
   State2D ray;
 
   ray.position = vec2(uCameraPosition.x, 0.0);
   ray.direction = vec2(
     directionX,
-    sqrt((1.0 - directionX * directionX) / (distanceToWormhole * distanceToWormhole + uRadiusSquared))
+    sqrt(sinTheta * sinTheta / (distanceToWormhole * distanceToWormhole + uRadiusSquared))
   );
 
   integrate2D(ray);
