@@ -2,9 +2,9 @@ var THREE = require("three");
 
 var PixelShaderRenderer = require("./pixelshaderrenderer");
 
-var floatRenderTargetSupported = require("../util/glsupport").floatRenderTargetSupported;
-
-console.log("Rendering to floating-point rendertargets supported:", floatRenderTargetSupported);
+var glSupport = require("../util/glsupport");
+var floatRenderTargetSupported = glSupport.floatRenderTargetSupported;
+var smallPOTRenderingSupported = glSupport.smallPOTRenderingSupported;
 
 function SceneRenderer(space) {
 
@@ -42,7 +42,11 @@ function SceneRenderer(space) {
   };
 
   // Init integration stuff
-  this._integrationBuffer = new THREE.WebGLRenderTarget(2048, 1, {
+
+  // Quirk: some older GPUs do not support rendering to textures with a side of 1, 2, 4 or 8 pixels long.
+  var width = smallPOTRenderingSupported ? 2048 : 1024;
+  var height = smallPOTRenderingSupported ? 1 : 3;
+  this._integrationBuffer = new THREE.WebGLRenderTarget(width, height, {
     wrapS: THREE.ClampToEdgeWrapping,
     wrapT: THREE.ClampToEdgeWrapping,
     format: THREE.RGBAFormat,

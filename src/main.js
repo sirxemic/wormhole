@@ -20,6 +20,9 @@ var playerX = wormholeSpace.radius * 2 + wormholeSpace.throatLength;
 player.position.set(playerX, Math.PI * 0.5, 0);
 player.rotateY(-Math.PI * 0.5);
 
+// A workaround for a bug in THREE.Clock.prototype.getDelta (only happening for older devices)
+window.performance = window.performance || Date;
+
 var clock = new THREE.Clock();
 
 var renderer = new Renderer(wormholeSpace, maxX);
