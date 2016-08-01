@@ -41,7 +41,6 @@
     max-width: 600px;
     max-height: 100vh;
     overflow: auto;
-    padding: 1.5em;
     -webkit-overflow-scrolling: touch;
     font-size: 14px;
     background: rgba(20,20,20, 0.95);
@@ -54,13 +53,17 @@
     transition: transform 0.5s cubic-bezier(.35,-0.29,.25,1);
   }
 
+  #introduction section {
+    padding: 0 1.5em;
+  }
+
   #introduction.hidden {
     -webkit-transform: translateY(-120%) translateX(-50%);
     transform: translateY(-120%) translateX(-50%);
   }
 
   #introduction h1 {
-    margin-bottom: 1em;
+    margin: 1em 0;
     text-align: center;
   }
 
@@ -79,6 +82,12 @@
     border-top: 1px solid #000;
     padding: 1em 0;
     margin: 0;
+  }
+
+  .side-note {
+    font-size: 80%;
+    padding: 0 1em;
+    color: #aaa;
   }
 
   .ui label {
@@ -117,17 +126,21 @@
 <div class="wrapper">
   <div id="main">
     <div id="introduction">
-      <h1>Travel through a wormhole</h1>
-      <p>So on the internet it's kind of hard to get a realistic impression of what travelling through a wormhole could look like. If you look around a bit you'll find things like:
-      </p>
-      <ul>
-        <li><a target="_blank" href="https://www.youtube.com/watch?v=8tX7KQSKMtQ">this wormhole simulation video</a> based on the actual maths of general relativity,</li>
-        <li><a target="_blank" href="https://www.youtube.com/watch?v=Ln2SGm9gEuE">this scene of the movie "Interstellar"</a>, which is epic but completely inaccurate for the interior (the exterior seems legit), and</li>
-        <li><a target="_blank" href="https://sirxemic.github.io/Interstellar">this "Interstellar" thing I made</a>, which is maybe sort of accurate, but in reality is just hacked together without knowing anything about general relativity or differential geometry.</li>
-      </ul>
-      <p>None of these show what a wormhole with a long "throat" would look like. This simulation does.</p>
-      <p>Side note: on some mobile devices and on PCs with certain GPUs the rendering might be rather grainy. If it happens to you: sorry about that!</p>
-      <p class="info">Click anywhere to continue</p>
+      <section>
+        <h1>Travel through a wormhole</h1>
+        <p>So on the internet it's kind of hard to get a realistic impression of what travelling through a wormhole could look like. If you look around a bit you'll find things like:
+        </p>
+        <ul>
+          <li><a target="_blank" href="https://www.youtube.com/watch?v=8tX7KQSKMtQ">this wormhole simulation video</a> based on the actual maths of general relativity,</li>
+          <li><a target="_blank" href="https://www.youtube.com/watch?v=Ln2SGm9gEuE">this scene of the movie "Interstellar"</a>, which is epic but completely inaccurate for the interior for artistic reasons (the exterior seems legit), and</li>
+          <li><a target="_blank" href="https://sirxemic.github.io/Interstellar">this "Interstellar" thing I made</a>, which is maybe sort of accurate, but in reality is just hacked together without knowing anything about general relativity or differential geometry.</li>
+        </ul>
+        <p>None of these show what a wormhole with a long "throat" would look like. This simulation does.</p>
+        <h2>Controls</h2>
+        <p>Use AWSD + mouse controls to move around on PC, and drag up, left and right to move forward and rotate on mobile devices.</p>
+        <p class="side-note">Side note: on some mobile devices and on PCs with certain GPUs the rendering might be rather grainy. If it happens to you: sorry about that!</p>
+        <p class="info">Click anywhere to continue</p>
+      </section>
     </div>
 
     <div class="ui ui-settings">
