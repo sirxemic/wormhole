@@ -1,17 +1,26 @@
-var webpack = require("webpack");
+const path = require('path')
 
 module.exports = {
-  entry: "./src/main.js",
+  entry: './src/main.ts',
   output: {
-    path: "./dist",
-    filename: "dist.js"
+    path: path.resolve(__dirname, 'dist'),
+    publicPath: 'dist',
+    filename: 'dist.js'
   },
   module: {
-    loaders: [
+    rules: [
+      {
+        test: /\.ts$/,
+        use: 'ts-loader',
+        exclude: /node_modules/,
+      },
       {
         test: /\.glsl$/,
-        loader: 'webpack-glsl'
+        loader: 'webpack-glsl-loader'
       }
-    ]
+    ],
+  },
+  resolve: {
+    extensions: [ '.ts', '.js', '.glsl' ]
   }
-};
+}

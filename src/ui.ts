@@ -1,5 +1,14 @@
-function setupUiToggle(options) {
-  var uiToggle = document.querySelector('[name=hide-ui]');
+import { PlayerControls } from './playercontrols'
+import { Renderer } from './renderer'
+
+export interface UiToggleOptions {
+  renderer: Renderer
+  playerControls: PlayerControls[]
+  resetPlayer: () => void
+}
+
+export function setupUiToggle (options: UiToggleOptions) {
+  const uiToggle = document.querySelector('[name=hide-ui]') as HTMLInputElement
 
   // Free movement is not supported on touch devices
   document.addEventListener('touchstart', function() {
@@ -10,7 +19,7 @@ function setupUiToggle(options) {
     return uiToggle.checked;
   }
 
-  function toggleUI(event) {
+  function toggleUI () {
     uiToggle.blur();
 
     if (uiVisible()) {
@@ -43,27 +52,22 @@ function setupUiToggle(options) {
 
   uiToggle.addEventListener('change', toggleUI, false);
 
-  toggleUI();
+  toggleUI()
 }
 
-function setupIntroductionModal(options) {
-  var main = document.querySelector('#main');
+export function setupIntroductionModal() {
+  const main = document.querySelector('#main')!
 
-  function removeIntroduction(event) {
+  function removeIntroduction (event: Event) {
     // Ignore clicks on links
-    if (event.target.href) {
+    if ('href' in event.target!) {
       return;
     }
 
-    document.querySelector('#introduction').classList.add('hidden');
+    document.querySelector('#introduction')!.classList.add('hidden');
 
     main.removeEventListener('click', removeIntroduction, false);
   }
 
   main.addEventListener('click', removeIntroduction, false);
 }
-
-module.exports = {
-  setupUiToggle: setupUiToggle,
-  setupIntroductionModal: setupIntroductionModal
-};
