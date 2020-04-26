@@ -29,10 +29,10 @@ export class PlayerControlsTouch extends PlayerControls {
     domElement.addEventListener('contextmenu', (event) => {
       event.preventDefault()
     }, false)
-    domElement.addEventListener('touchstart', this.touchStart, false)
-    domElement.addEventListener('touchmove', this.touchMove, false)
-    domElement.addEventListener('touchend', this.touchEnd, false)
-    domElement.addEventListener('touchcancel', this.touchEnd, false)
+    domElement.addEventListener('touchstart', this.touchStart.bind(this), false)
+    domElement.addEventListener('touchmove', this.touchMove.bind(this), false)
+    domElement.addEventListener('touchend', this.touchEnd.bind(this), false)
+    domElement.addEventListener('touchcancel', this.touchEnd.bind(this), false)
   }
 
   private touchStart (event: TouchEvent) {

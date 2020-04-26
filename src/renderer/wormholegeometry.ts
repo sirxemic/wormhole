@@ -126,7 +126,7 @@ export class WormholeGeometry extends Geometry {
     const distanceToThroat = Math.abs(x) - this.space.throatLength
 
     if (distanceToThroat < 0) {
-      target.set(
+      return target.set(
         Math.cos(y),
         Math.sin(y),
         0.0

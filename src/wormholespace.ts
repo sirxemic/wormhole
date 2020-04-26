@@ -1,4 +1,4 @@
-import { Vector3, Object3D, Quaternion, Matrix3, Matrix4 } from 'three'
+import { Vector3, Quaternion, Matrix3, Matrix4 } from 'three'
 import { Matrix3Util } from './mathutil'
 
 const deltaPosition = new Vector3()
@@ -21,6 +21,12 @@ const lhs = new Matrix3()
 const lhsInverse = new Matrix3()
 
 const rotationMatrix = new Matrix4()
+
+interface Movable {
+  position: Vector3
+  quaternion: Quaternion
+  __tetrad?: Vector3[]
+}
 
 export class WormholeSpace {
   constructor (
@@ -50,7 +56,7 @@ export class WormholeSpace {
     direction.z *= r * Math.sin(position.y)
   }
 
-  step (object: Object3D & { __tetrad?: Vector3[] }, direction: Vector3, delta: number) {
+  step (object: Movable, direction: Vector3, delta: number) {
     const position = object.position
     const distanceToWormhole0 = Math.max(0, Math.abs(position.x) - this.throatLength)
     const radiusSquared = this.radiusSquared
@@ -184,15 +190,15 @@ export class WormholeSpace {
     quaternion.setFromRotationMatrix(rotationMatrix).normalize()
   }
 
-  move (object: Object3D & { __tetrad?: Vector3[] }, direction: Vector3, distance: number) {
+  move (object: Movable, direction: Vector3, distance: number) {
     this.adjustCartesianDirection(object.position, direction)
 
     if (object.quaternion) {
       if (!object.__tetrad) {
         object.__tetrad = [
-          new Vector3,
-          new Vector3,
-          new Vector3
+          new Vector3(),
+          new Vector3(),
+          new Vector3()
         ]
       }
 

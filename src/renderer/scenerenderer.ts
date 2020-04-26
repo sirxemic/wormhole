@@ -13,17 +13,16 @@ import {
   FloatType,
   UnsignedByteType,
   RawShaderMaterial,
-  ShaderMaterialParameters,
-  Renderer,
   WebGLRenderer,
-  Camera,
-  Object3D
+  Object3D,
+  CubeTexture
 } from 'three'
 
 import integrationVertexShader from '../shaders/integration.vs.glsl'
 import integrationFragmentShader from '../shaders/integration.fs.glsl'
 import renderVertexShader from '../shaders/render.vs.glsl'
 import renderFragmentShader from '../shaders/render.fs.glsl'
+import { generateMipmaps } from '../util/mipmaps'
 
 function loadSkybox(path: string, ext: string = 'jpg') {
   const files = [
@@ -32,7 +31,27 @@ function loadSkybox(path: string, ext: string = 'jpg') {
     'sky_pos_z', 'sky_neg_z'
   ].map(file => file + '.' + ext)
 
-  return new CubeTextureLoader().setPath(path).load(files)
+  const cubeTexture = new CubeTextureLoader()
+    .setPath(path)
+    .load(files, async () => {
+      const images = cubeTexture.images as HTMLImageElement[]
+      const mipmapImageData = await Promise.all(images.map(generateMipmaps))
+      const mipmapCount = mipmapImageData[0].length
+      cubeTexture.mipmaps = []
+      for (let i = 0; i < mipmapCount; i++) {
+        cubeTexture.mipmaps.push((new CubeTexture([
+          mipmapImageData[0][i],
+          mipmapImageData[1][i],
+          mipmapImageData[2][i],
+          mipmapImageData[3][i],
+          mipmapImageData[4][i],
+          mipmapImageData[5][i]
+        ]) as unknown) as ImageData)
+      }
+      cubeTexture.generateMipmaps = false
+      cubeTexture.needsUpdate = true
+    })
+  return cubeTexture
 }
 
 // The minimum field of view (horizontal and vertical)

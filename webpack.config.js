@@ -1,11 +1,14 @@
 const path = require('path')
 
 module.exports = {
-  entry: './src/main.ts',
+  entry: {
+    main: './src/main.ts',
+    mipmapWorker: './src/util/mipmapWorker.ts'
+  },
   output: {
     path: path.resolve(__dirname, 'dist'),
     publicPath: 'dist',
-    filename: 'dist.js'
+    filename: '[name].js'
   },
   module: {
     rules: [

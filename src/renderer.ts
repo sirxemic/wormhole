@@ -1,4 +1,4 @@
-import { WebGLRenderer, Camera, Object3D } from 'three'
+import { WebGLRenderer, Object3D } from 'three'
 import { WormholeSpace } from './wormholespace'
 import { SceneRenderer } from './renderer/scenerenderer'
 import { DiagramRenderer } from './renderer/diagramrenderer'

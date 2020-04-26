@@ -18,10 +18,6 @@ export class PlayerControlsKeyboard extends PlayerControls
     super(player, domElement)
 
     domElement.onclick = () => {
-      (domElement as any).requestPointerLock =
-        (domElement.requestPointerLock ||
-        (domElement as any).mozRequestPointerLock ||
-        (domElement as any).webkitRequestPointerLock)
       domElement.requestPointerLock()
     }
 
@@ -32,8 +28,6 @@ export class PlayerControlsKeyboard extends PlayerControls
 
     // Hook pointer lock state change events for different browsers
     document.addEventListener('pointerlockchange', this.lockChange, false)
-    document.addEventListener('mozpointerlockchange', this.lockChange, false)
-    document.addEventListener('webkitpointerlockchange', this.lockChange, false)
     document.addEventListener('keydown', this.onKeyDown, false)
     document.addEventListener('keyup', this.onKeyUp, false)
   }
@@ -87,9 +81,9 @@ export class PlayerControlsKeyboard extends PlayerControls
   }
 
   private onMouseMove (e: MouseEvent) {
-    this.rotationSpeedX += 4 * (e.movementX || (e as any).mozMovementX || (e as any).webkitMovementX || 0)
+    this.rotationSpeedX += 4 * (e.movementX || 0)
     if (this.freeMovement) {
-      this.rotationSpeedY += 4 * (e.movementY || (e as any).mozMovementY || (e as any).webkitMovementY || 0)
+      this.rotationSpeedY += 4 * (e.movementY || 0)
     }
   }
 
@@ -153,9 +147,7 @@ export class PlayerControlsKeyboard extends PlayerControls
   }
 
   private lockChange() {
-    if (document.pointerLockElement === this.domElement ||
-      (document as any).mozPointerLockElement === this.domElement ||
-      (document as any).webkitPointerLockElement === this.domElement) {
+    if (document.pointerLockElement === this.domElement) {
       document.addEventListener('mousemove', this.onMouseMove, false)
     }
     else {
