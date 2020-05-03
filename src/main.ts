@@ -8,7 +8,7 @@ import { setupUiToggle, setupIntroductionModal } from './ui'
 
 var container = document.querySelector('#main')!
 
-var wormholeSpace = new WormholeSpace(1.4, 5)
+var wormholeSpace = new WormholeSpace(1.5, 5)
 
 var player = new Player(wormholeSpace)
 
@@ -19,7 +19,7 @@ var playerX = wormholeSpace.radius * 2 + wormholeSpace.throatLength
 player.position.set(playerX, Math.PI * 0.5, 0)
 player.rotateY(-Math.PI * 0.5)
 
-// A workaround for a bug in THREE.Clock.prototype.getDelta (only happening for older devices)
+// A workaround for a bug in THREE.Clock.prototype.getDelta (only happening on older devices)
 ;(window as any).performance = window.performance || Date
 
 var clock = new Clock()

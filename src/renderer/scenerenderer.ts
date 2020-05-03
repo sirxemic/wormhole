@@ -1,6 +1,6 @@
 import { PixelShaderRenderer } from './pixelshaderrenderer'
 
-import { floatRenderTargetSupported, smallPOTRenderingSupported } from '../util/glsupport'
+import { glProfile } from '../util/glsupport'
 import { WormholeSpace } from '../wormholespace'
 import {
   CubeTextureLoader,
@@ -11,11 +11,11 @@ import {
   ClampToEdgeWrapping,
   RGBAFormat,
   FloatType,
-  UnsignedByteType,
   RawShaderMaterial,
   WebGLRenderer,
   Object3D,
-  CubeTexture
+  CubeTexture,
+  HalfFloatType
 } from 'three'
 
 import integrationVertexShader from '../shaders/integration.vs.glsl'
@@ -82,19 +82,20 @@ export class SceneRenderer {
 
     // Init defines
     const commonDefines = {
-      RENDER_TO_FLOAT_TEXTURE: ~~floatRenderTargetSupported
+      RENDER_TO_FLOAT_TEXTURE: ~~(glProfile.renderTargetType === FloatType || glProfile.renderTargetType === HalfFloatType)
     }
 
     // Init integration stuff
     // Quirk: some older GPUs do not support rendering to textures with a side of 1, 2, 4 or 8 pixels long.
-    const width = smallPOTRenderingSupported ? 2048 : 1024
-    const height = smallPOTRenderingSupported ? 1 : 3
+    // To keep the performance high, we lower the resolution for those GPUs as well
+    const width = glProfile.smallPotRendering ? 2048 : 1024
+    const height = glProfile.smallPotRendering ? 1 : 3
 
     this.integrationBuffer = new WebGLRenderTarget(width, height, {
       wrapS: ClampToEdgeWrapping,
       wrapT: ClampToEdgeWrapping,
       format: RGBAFormat,
-      type: floatRenderTargetSupported ? FloatType : UnsignedByteType
+      type: glProfile.renderTargetType
     })
 
     const integrationShader = new RawShaderMaterial({

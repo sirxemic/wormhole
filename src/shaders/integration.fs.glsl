@@ -1,5 +1,7 @@
 precision highp float;
 
+@import ./common;
+
 uniform vec3 uCameraPosition;
 
 uniform float uRadiusSquared;
@@ -10,14 +12,14 @@ varying float vTheta;
 struct State2D {
   vec2 position;
   vec2 direction;
-  float distance;
+  float throatTravelDistance;
 };
 
 // Do an integration step in 2D wormhole space.
 void step2D(inout State2D ray) {
   float distanceToWormhole = abs(ray.position.x) - uThroatLength;
 
-  float delta = 0.1 / uRadiusSquared;
+  float delta;
 
   if (distanceToWormhole >= 0.0) {
     // We can take bigger integration steps when at a larger distance away from the wormhole.
@@ -48,27 +50,16 @@ void step2D(inout State2D ray) {
   }
   else {
     // Inside the wormhole spacetime is flat, so just compute the distance to the mouth.
-    if (ray.position.x >= 0.0 && ray.direction.x < 0.0) {
-      delta = (ray.position.x + uThroatLength) / -ray.direction.x;
-    }
-    else if (ray.position.x >= 0.0 && ray.direction.x > 0.0) {
-      delta = (uThroatLength - ray.position.x) / ray.direction.x;
-    }
-    else if (ray.position.x < 0.0 && ray.direction.x > 0.0) {
-      delta = (uThroatLength - ray.position.x) / ray.direction.x;
-    }
-    else if (ray.position.x < 0.0 && ray.direction.x < 0.0) {
+    if (ray.direction.x < 0.0) {
       delta = (ray.position.x + uThroatLength) / -ray.direction.x;
     }
     else {
-      // Looks like the camera is pointed into the wormhole's "abyss"
-      delta = 1000.0;
+      delta = (uThroatLength - ray.position.x) / ray.direction.x;
     }
+    ray.throatTravelDistance += abs(delta);
   }
 
   ray.position += ray.direction * delta;
-
-  ray.distance += delta;
 }
 
 // Normalize the direction according to the curvature.
@@ -85,7 +76,7 @@ void normalizeDirection2D(inout State2D ray) {
 
 // Integrate in 2D wormhole space.
 void integrate2D(inout State2D ray) {
-  for (int i = 0; i < 128; i++) {
+  for (int i = 0; i < 200; i++) {
     step2D(ray);
     normalizeDirection2D(ray);
   }
@@ -118,12 +109,13 @@ void main()
   );
 
   #if RENDER_TO_FLOAT_TEXTURE
-    gl_FragColor = vec4(finalDirection, ray.position.x, ray.distance);
+    gl_FragColor = vec4(finalDirection, ray.position.x, ray.throatTravelDistance);
   #else
+    float distance = (ray.throatTravelDistance - uThroatLength * THROAT_FADE_START) / (uThroatLength * THROAT_FADE_LENGTH);
     gl_FragColor = vec4(
       normalize(finalDirection) * 0.5 + 0.5,
       clamp(ray.position.x, -0.5, 0.5) + 0.5,
-      ray.distance * 0.001
+      clamp(distance, 0.0, 1.0)
     );
   #endif
 }

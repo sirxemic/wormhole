@@ -18,7 +18,7 @@ varying vec3 vRayDir;
 struct State3D {
   vec3 position;
   vec3 direction;
-  float distance;
+  float throatTravelDistance;
 };
 
 /**
@@ -59,7 +59,7 @@ void integrate3D(inout State3D ray, out vec3 cubeCoord) {
   #if !RENDER_TO_FLOAT_TEXTURE
     finalIntegrationState.xy = finalIntegrationState.xy * 2.0 - 1.0;
     finalIntegrationState.z -= 0.5;
-    finalIntegrationState.w *= 1000.0;
+    finalIntegrationState.w = uThroatLength * (THROAT_FADE_START + finalIntegrationState.w * THROAT_FADE_LENGTH);
   #endif
 
   // Compute the end-direction in cartesian space
@@ -68,7 +68,7 @@ void integrate3D(inout State3D ray, out vec3 cubeCoord) {
   // Transform the 2D position and direction back into 3D
   // Though only position.x is used, we don't transform the other ray attributes
   ray.position.x = finalIntegrationState.z;
-  ray.distance = finalIntegrationState.w;
+  ray.throatTravelDistance = finalIntegrationState.w;
 }
 
 // Transform a direction given in flat spacetime coordinates to one of the same angle
@@ -90,10 +90,10 @@ vec4 getColor(State3D ray, vec3 cubeCoord) {
   vec3 color = mix(skybox1Color, skybox2Color, merge);
 
   // Prettify the thing where everything becomes infinite
-  const float cutoffStart = 150.0;
-  const float cutoffEnd = 800.0;
+  float cutoffStart = uThroatLength * THROAT_FADE_START;
+  float cutoffLength = uThroatLength * THROAT_FADE_LENGTH;
 
-  float blackFade = clamp((ray.distance - cutoffStart) / (cutoffEnd - cutoffStart), 0.0, 1.0);
+  float blackFade = clamp((ray.throatTravelDistance - cutoffStart) / cutoffLength, 0.0, 1.0);
 
   return vec4(mix(color, vec3(0.0), blackFade), 1.0);
 }
