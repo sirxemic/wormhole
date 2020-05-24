@@ -24,7 +24,12 @@ export class UiManager {
   startListening () {
     this.removeSplashScreen = this.removeSplashScreen.bind(this)
 
-    document.body.addEventListener('click',this.removeSplashScreen, false)
+    document.body.addEventListener('click', (e) => {
+      if ((e.target as HTMLElement).tagName === 'A') {
+        return
+      }
+      this.removeSplashScreen()
+    }, false)
 
     const uiToggle = document.querySelector('[name=hide-ui]') as HTMLInputElement
 

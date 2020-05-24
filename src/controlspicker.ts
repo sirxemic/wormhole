@@ -28,7 +28,13 @@ export class ControlsPicker extends EventDispatcher<{ controls: ControlType }> {
       document.addEventListener('keydown', this.pickKeyboardControls)
     }
 
-    document.addEventListener('touchstart', this.pickTouchControls)
+    document.addEventListener('touchstart', e => {
+      if ((e.target as HTMLElement).tagName === 'A') {
+        return
+      }
+
+      this.pickTouchControls()
+    })
   }
 
   getCurrentPlayerControls () {
