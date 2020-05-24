@@ -1,6 +1,6 @@
 # Wormhole simulation
 
-Experience the space time curvature of a 3D wormhole in your browser.
+Experience the space time curvature and strange lensing effects of a 3D wormhole in your browser.
 
 ## Mathematical details
 

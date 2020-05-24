@@ -25,5 +25,11 @@ module.exports = {
   },
   resolve: {
     extensions: [ '.ts', '.js', '.glsl' ]
+  },
+  devServer: {
+    https: true,
+    host: '0.0.0.0',
+    port: 443,
+    disableHostCheck: true
   }
 }

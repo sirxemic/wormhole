@@ -1,4 +1,11 @@
-import { Matrix3 } from 'three'
+import { Matrix3, Vector3 } from 'three'
+
+export const UnitX = new Vector3(1, 0, 0)
+export const UnitY = new Vector3(0, 1, 0)
+export const UnitZ = new Vector3(0, 0, 1)
+export const UnitXNeg = new Vector3(-1, 0, 0)
+export const UnitYNeg = new Vector3(0, -1, 0)
+export const UnitZNeg = new Vector3(0, 0, -1)
 
 export const Matrix3Util = {
   subtract (target: Matrix3, matrix: Matrix3) {

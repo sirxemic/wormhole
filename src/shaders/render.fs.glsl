@@ -31,11 +31,11 @@ void sphericalToCartesian(vec2 position, vec2 direction, out vec3 outPos, out ve
         sinX = sin(position.x),
         cosX = cos(position.x);
 
-  outPos = vec3(sinY * cosX, -cosY, sinY * sinX);
+  outPos = vec3(sinY * cosX, -cosY, -sinY * sinX);
   outDir = vec3(
     -sinY * sinX * direction.x + cosY * cosX * direction.y,
      sinY * direction.y,
-     sinY * cosX * direction.x + cosY * sinX * direction.y
+    -sinY * cosX * direction.x - cosY * sinX * direction.y
   );
 }
 

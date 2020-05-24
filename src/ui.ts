@@ -1,73 +1,93 @@
-import { PlayerControls } from './playercontrols'
 import { Renderer } from './renderer'
+import { ControlsPicker } from './controlspicker'
+import { Player } from './player'
 
-export interface UiToggleOptions {
+export interface UiManagerOptions {
   renderer: Renderer
-  playerControls: PlayerControls[]
-  resetPlayer: () => void
+  controlsPicker: ControlsPicker
+  player: Player
 }
 
-export function setupUiToggle (options: UiToggleOptions) {
-  const uiToggle = document.querySelector('[name=hide-ui]') as HTMLInputElement
+export class UiManager {
+  renderer: Renderer
+  controlsPicker: ControlsPicker
+  player: Player
 
-  // Free movement is not supported on touch devices
-  document.addEventListener('touchstart', function() {
-    document.body.classList.add('no-ui');
-  }, false);
-
-  function uiVisible() {
-    return uiToggle.checked;
+  constructor (
+    options: UiManagerOptions
+  ) {
+    this.renderer = options.renderer
+    this.controlsPicker = options.controlsPicker
+    this.player = options.player
   }
 
-  function toggleUI () {
-    uiToggle.blur();
+  startListening () {
+    this.removeSplashScreen = this.removeSplashScreen.bind(this)
 
-    if (uiVisible()) {
-      document.body.classList.add('no-ui');
+    document.body.addEventListener('click',this.removeSplashScreen, false)
+
+    const uiToggle = document.querySelector('[name=hide-ui]') as HTMLInputElement
+
+    uiToggle.addEventListener('click', async (e) => {
+      if (uiToggle.checked) {
+        try {
+          await this.requestFreeMovement()
+          this.renderer.showDiagram = false
+        } catch (e) {
+          uiToggle.checked = false
+        }
+      } else {
+        this.renderer.showDiagram = true
+        this.clearFreeMovement()
+      }
+
+      document.querySelector('.ui')!.classList.toggle('hidden', uiToggle.checked)
+    }, false)
+
+    this.controlsPicker.addEventListener('pick', e => {
+      if (e.controls === 'touch') {
+        this.showTouchControls()
+      }
+    })
+  }
+
+  removeSplashScreen () {
+    document.querySelector('.splash')!.classList.add('hidden')
+
+    document.body.removeEventListener('click', this.removeSplashScreen, false)
+  }
+
+  showTouchControls () {
+    this.removeSplashScreen()
+
+    const element = document.querySelector('.mobile-instructions')!
+    element.classList.remove('hidden')
+    function dismiss () {
+      element.classList.add('hidden')
+
+      document.removeEventListener('touchstart', dismiss, false)
     }
-    else {
-      document.body.classList.remove('no-ui');
-    }
 
-    updateDiagramVisibility();
-    updateFreeMovement();
+    document.addEventListener('touchstart', dismiss, false)
   }
 
-  function updateFreeMovement() {
-    var freeMovement = uiVisible();
-
-    if (!freeMovement) {
-      // Reset the player
-      options.resetPlayer();
-    }
-
-    options.playerControls.forEach(function(playerControl) {
-      playerControl.freeMovement = freeMovement
-    });
+  requestFreeMovement() {
+    return this.controlsPicker.getCurrentPlayerControls()?.requestFreeMovement()
   }
 
-  function updateDiagramVisibility() {
-    options.renderer.showDiagram = !uiVisible();
+  clearFreeMovement() {
+    const player = this.player
+
+    player.position.y = Math.PI * 0.5
+
+    player.quaternion.x = 0
+    player.quaternion.z = 0
+    player.quaternion.normalize()
+
+    player.eyes.quaternion.x = 0
+    player.eyes.quaternion.z = 0
+    player.eyes.quaternion.normalize()
+
+    this.controlsPicker.getCurrentPlayerControls()?.stopFreeMovement()
   }
-
-  uiToggle.addEventListener('change', toggleUI, false);
-
-  toggleUI()
-}
-
-export function setupIntroductionModal() {
-  const main = document.querySelector('#main')!
-
-  function removeIntroduction (event: Event) {
-    // Ignore clicks on links
-    if ('href' in event.target!) {
-      return;
-    }
-
-    document.querySelector('#introduction')!.classList.add('hidden');
-
-    main.removeEventListener('click', removeIntroduction, false);
-  }
-
-  main.addEventListener('click', removeIntroduction, false);
 }

@@ -1,9 +1,10 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Wormhole simulation</title>
+  <title>Into a wormhole</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <meta name="description" content="Experience the space time curvature and strange lensing effects of a 3D wormhole in your browser.">
   <style>
   *, *::before, *::after {
     margin: 0;
@@ -13,138 +14,167 @@
   body, html {
     width: 100%;
     height: 100%;
+    background: #000;
   }
 
   body {
     background: #000;
-    color: #fff;
-    font-size: 12px;
-    font-family: sans-serif;
-    overflow: hidden;
+    color: #eee;
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica, Arial, sans-serif;
   }
 
-  .wrapper {
-    height: 101%;
+  p {
+    margin-bottom: 0.75em;
+    max-width: 50em;
   }
 
-  .main {
-    position: relative;
-    height: 100vh;
-  }
-
-  canvas {
-    display: block;
-  }
-
-  #introduction {
-    width: 100%;
-    max-width: 600px;
-    max-height: 100vh;
-    overflow: auto;
-    -webkit-overflow-scrolling: touch;
-    font-size: 14px;
-    background: rgba(20,20,20, 0.95);
-    box-shadow: 0 10px 20px #000;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 20;
-    transition: transform 0.5s cubic-bezier(.35,-0.29,.25,1);
-  }
-
-  #introduction section {
-    padding: 0 1.5em;
-  }
-
-  #introduction.hidden {
-    transform: translateY(-120%) translateX(-50%);
-  }
-
-  #introduction h1 {
-    margin: 1em 0;
-    text-align: center;
-  }
-
-  #introduction p, #introduction ul {
-    line-height: 1.5;
-    margin: 0 0 1em;
-  }
-
-  #introduction a {
+  a {
     color: #387aff;
   }
 
-  #introduction .info {
-    color: #888;
-    text-align: center;
-    border-top: 1px solid #000;
-    padding: 1em 0;
-    margin: 0;
+  canvas {
+    position: fixed;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    right: 0;
+    display: block;
   }
 
-  .side-note {
-    font-size: 80%;
+  .screen {
     padding: 0 1em;
-    color: #aaa;
+    overflow: hidden;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    text-align: center;
+    align-items: center;
+    text-shadow: 0 0 0.25em #000;
+    background: rgba(0,0,0,0.25);
+  }
+
+  .swipe-icon-wrapper {
+    width: 8em;
+    height: 8em;
+    margin-top: 2em;
+    position: relative;
+  }
+
+  .swipe-icon {
+    width: 4em;
+    height: 4em;
+    fill: #fff;
+    position: absolute;
+    transform: translate(-50%, -50%);
+    animation: mobile-instructions 7s ease-in-out infinite;
+  }
+
+  @keyframes mobile-instructions {
+      0% { top: 50%; left:  50%; opacity: 0; }
+      5% { top: 50%; left:  50%; opacity: 1; }
+     15% { top:   0; left:  50%; opacity: 1; }
+     20% { top:   0; left:  50%; opacity: 0; }
+
+     25% { top: 50%; left:  50%; opacity: 0; }
+     30% { top: 50%; left:  50%; opacity: 1; }
+     40% { top:   0; left:  50%; opacity: 1; }
+     45% { top:   0; left:  50%; opacity: 0; }
+
+     50% { top: 50%; left:  50%; opacity: 0; }
+     55% { top: 50%; left:  50%; opacity: 1; }
+     65% { top: 50%; left:    0; }
+     85% { top: 50%; left: 100%; }
+     95% { top: 50%; left:  50%; opacity: 1; }
+    100% { top: 50%; left:  50%; opacity: 0; }
+  }
+
+  .screen.hidden {
+    opacity: 0;
+    overflow: auto;
+    visibility: hidden;
+
+    pointer-events: none;
+  }
+
+  .title {
+    font-size: 4em;
+    margin: 0 0 0.5em;
+  }
+
+  @media (max-width: 800px) {
+    .title {
+      font-size: 3em;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .title {
+      font-size: 2em;
+    }
+  }
+
+  .intro {
+    margin-bottom: 0.75em;
+  }
+
+  .dismiss-info {
+    margin: 2em;
+  }
+
+  .ui {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 1;
+    text-align: left;
+    padding: 0.5em;
+    background: rgba(0,0,0,0.5);
+    transition: all 0.2s ease;
   }
 
   .ui label {
     cursor: pointer;
+    font-size: 0.8em;
   }
 
-  .ui-settings {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    z-index: 11;
-    text-align: left;
-    padding: 1em;
-    background: rgba(0,0,0,0.5);
-  }
-
-  .ui {
-    transition: all 0.2s ease;
-  }
-
-  .no-ui .ui {
+  .ui.hidden, .screen:not(.hidden) ~ .ui {
     opacity: 0;
   }
 
-  .no-ui .ui-settings:hover {
+  .ui.hidden:hover {
     opacity: 1;
-  }
-
-  .no-ui .renderer-settings {
-    transform: translateX(100%);
   }
   </style>
 </head>
 <body>
+<div id="canvas-wrapper">
+</div>
 
-<div class="wrapper">
-  <div id="main">
-    <div id="introduction">
-      <section>
-        <h1>Travel through a wormhole</h1>
-        <p>So on the internet it's kind of hard to get a realistic impression of what travelling through a wormhole could look like. If you look around a bit you'll find things like:
-        </p>
-        <ul>
-          <li><a target="_blank" href="https://www.youtube.com/watch?v=8tX7KQSKMtQ">this wormhole simulation video</a> based on the actual maths of general relativity,</li>
-          <li><a target="_blank" href="https://www.youtube.com/watch?v=Ln2SGm9gEuE">this scene of the movie "Interstellar"</a>, which is epic but completely inaccurate for the interior for artistic reasons (the exterior seems legit), and</li>
-          <li><a target="_blank" href="https://sirxemic.github.io/Interstellar">this "Interstellar" thing I made</a>, which is maybe sort of accurate, but in reality is just hacked together without knowing anything about general relativity or differential geometry.</li>
-        </ul>
-        <p>None of these show what a wormhole with a long "throat" would look like. This simulation does.</p>
-        <h2>Controls</h2>
-        <p>Use AWSD + mouse controls to move around on PC, and drag up, left and right to move forward and rotate on mobile devices.</p>
-        <p class="side-note">Side note: on some mobile devices and on PCs with certain GPUs the rendering might be rather grainy. If it happens to you: sorry about that!</p>
-        <p class="info">Click anywhere to continue</p>
-      </section>
-    </div>
+<div class="splash screen">
+  <h1 class="title">Into a wormhole</h1>
+  <p class="intro">Wormholes are weird. Wormholes with “throats” are even weirder. Here you can experience that weirdness for&nbsp;yourself.</p>
+  <p class="intro">For more (mathematical) details, check the <a href="https://github.com/sirxemic/wormhole" target="_blank">Github repo</a>.</p>
+  <p class="dismiss-info">Click or tap anywhere to continue</p>
+</div>
 
-    <div class="ui ui-settings">
-      <label><input type="checkbox" name="hide-ui"> Hide UI &amp; enable free movement</label>
-    </div>
+<div class="mobile-instructions screen hidden">
+  <p>Swipe vertically to move forwards and backwards. Swipe horizontally to look around.</p>
+  <div class="swipe-icon-wrapper">
+    <svg class="swipe-icon" viewBox="0 0 37 45" xmlns="http://www.w3.org/2000/svg">
+      <path d="M12,3.974C12.014,1.778 13.801,0 16,0C18.208,0 20,1.792 20,4L20,13.58L33.143,16.503C35.277,16.978 36.698,19.126 36.325,21.306L36.321,21.331L34,34.389L34,45L12,45L12,33.071L7.658,28.729L3.286,27.936L3.261,27.931C1.103,27.525 -0.328,25.45 0.064,23.286C0.458,21.114 2.542,19.67 4.714,20.064L12,21.386L12,4L12,3.974Z"/>
+    </svg>
   </div>
+</div>
+
+<div class="ui">
+  <label><input type="checkbox" name="hide-ui"> Hide diagram &amp; lift restricted movement</label>
 </div>
 
 <script src="dist/main.js"></script>
