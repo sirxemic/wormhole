@@ -1,7 +1,7 @@
-import { PixelShaderRenderer } from './pixelshaderrenderer'
+import { PixelShaderRenderer } from './PixelShaderRenderer'
 
-import { glProfile } from '../util/glsupport'
-import { WormholeSpace } from '../wormholespace'
+import { glProfile } from '../util/glSupport'
+import { WormholeSpace } from '../WormholeSpace'
 import {
   Vector2,
   Vector3,
@@ -24,8 +24,8 @@ import integrationFragmentShader from '../shaders/integration.fs.glsl'
 import renderVertexShader from '../shaders/render.vs.glsl'
 import renderFragmentShader from '../shaders/render.fs.glsl'
 import { generateMipmaps } from '../util/mipmaps'
-import { Player } from '../player'
-import { UnitXNeg } from '../mathutil'
+import { Player } from '../Player'
+import { UnitXNeg } from '../MathUtils'
 
 function loadSkybox(path: string, ext: string = 'jpg') {
   const files = [

@@ -1,4 +1,4 @@
-import { WormholeSpace } from './wormholespace'
+import { WormholeSpace } from './WormholeSpace'
 import { Object3D, Vector3, PerspectiveCamera } from 'three'
 
 export class Player extends Object3D

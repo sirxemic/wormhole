@@ -1,5 +1,5 @@
-import { Player } from './player'
-import { Vector3 } from 'three';
+import { Player } from './Player'
+import { Vector3 } from 'three'
 
 export abstract class PlayerControls {
   protected velocity = new Vector3()

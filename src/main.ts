@@ -1,11 +1,11 @@
-import { WormholeSpace } from './wormholespace'
-import { Player } from './player'
-import { Renderer } from './renderer'
-import { PlayerControlsKeyboard } from './playercontrolskeyboard'
-import { PlayerControlsTouch } from './playercontrolstouch'
+import { WormholeSpace } from './WormholeSpace'
+import { Player } from './Player'
+import { Renderer } from './Renderer'
+import { PlayerControlsKeyboard } from './PlayerControlsDesktop'
+import { PlayerControlsTouch } from './PlayerControlsMobile'
 import { WebGLRenderer } from 'three'
-import { UiManager } from './ui'
-import { ControlsPicker } from './controlspicker'
+import { UiManager } from './UiManager'
+import { ControlsPicker } from './ControlsPicker'
 
 const webglRenderer = new WebGLRenderer()
 document.querySelector('#canvas-wrapper')!.appendChild(webglRenderer.domElement)

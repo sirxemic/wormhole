@@ -1,8 +1,8 @@
 import { WebGLRenderer, MathUtils } from 'three'
-import { WormholeSpace } from './wormholespace'
-import { SceneRenderer } from './renderer/scenerenderer'
-import { DiagramRenderer } from './renderer/diagramrenderer'
-import { Player } from './player'
+import { WormholeSpace } from './WormholeSpace'
+import { SceneRenderer } from './renderer/SceneRenderer'
+import { DiagramRenderer } from './renderer/DiagramRenderer'
+import { Player } from './Player'
 
 export class Renderer
 {

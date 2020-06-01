@@ -1,5 +1,5 @@
-import { WormholeGeometry } from './wormholegeometry'
-import { WormholeSpace } from '../wormholespace'
+import { WormholeGeometry } from './WormholeGeometry'
+import { WormholeSpace } from '../WormholeSpace'
 import {
   Scene,
   PerspectiveCamera,
@@ -22,7 +22,7 @@ import {
 
 import vertexShader from '../shaders/diagram.vs.glsl'
 import fragmentShader from '../shaders/diagram.fs.glsl'
-import { Player } from '../player'
+import { Player } from '../Player'
 
 const normal = new Vector3()
 const tangent = new Vector3()

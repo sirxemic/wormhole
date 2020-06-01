@@ -1,7 +1,7 @@
-import { PlayerControls } from './playercontrols'
+import { PlayerControls } from './PlayerControls'
 import { EventDispatcher } from './EventDispatcher'
 
-type ControlType = 'keyboard' | 'touch'
+type ControlType = 'desktop' | 'mobile'
 
 export class ControlsPicker extends EventDispatcher<{ controls: ControlType }> {
   currentType?: ControlType
@@ -10,14 +10,14 @@ export class ControlsPicker extends EventDispatcher<{ controls: ControlType }> {
   allControls: Record<ControlType, PlayerControls>
 
   constructor (
-    keyboardControls: PlayerControls,
-    touchControls: PlayerControls
+    desktopControls: PlayerControls,
+    mobileControls: PlayerControls
   ) {
     super()
 
     this.allControls = {
-      'keyboard': keyboardControls,
-      'touch': touchControls
+      'desktop': desktopControls,
+      'mobile': mobileControls
     }
 
     this.pickKeyboardControls = this.pickKeyboardControls.bind(this)
@@ -42,11 +42,11 @@ export class ControlsPicker extends EventDispatcher<{ controls: ControlType }> {
   }
 
   pickKeyboardControls () {
-    this.pickControls('keyboard')
+    this.pickControls('desktop')
   }
 
   pickTouchControls () {
-    this.pickControls('touch')
+    this.pickControls('mobile')
   }
 
   pickControls (type: ControlType) {

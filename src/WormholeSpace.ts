@@ -1,5 +1,5 @@
 import { Vector3, Quaternion, Matrix3, Matrix4 } from 'three'
-import { Matrix3Util } from './mathutil'
+import { Matrix3Util } from './MathUtils'
 
 const deltaPosition = new Vector3()
 const deltaDirection = new Vector3()

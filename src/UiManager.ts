@@ -1,6 +1,6 @@
-import { Renderer } from './renderer'
-import { ControlsPicker } from './controlspicker'
-import { Player } from './player'
+import { Renderer } from './Renderer'
+import { ControlsPicker } from './ControlsPicker'
+import { Player } from './Player'
 
 export interface UiManagerOptions {
   renderer: Renderer
@@ -50,8 +50,8 @@ export class UiManager {
     }, false)
 
     this.controlsPicker.addEventListener('pick', e => {
-      if (e.controls === 'touch') {
-        this.showTouchControls()
+      if (e.controls === 'mobile') {
+        this.showMobileControls()
       }
     })
   }
@@ -62,7 +62,7 @@ export class UiManager {
     document.body.removeEventListener('click', this.removeSplashScreen, false)
   }
 
-  showTouchControls () {
+  showMobileControls () {
     this.removeSplashScreen()
 
     const element = document.querySelector('.mobile-instructions')!

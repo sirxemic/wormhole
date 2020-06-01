@@ -1,7 +1,7 @@
 import { Vector3, Quaternion, MathUtils, Euler } from 'three'
-import { Player } from './player'
-import { PlayerControls } from './playercontrols'
-import { UnitZ } from './mathutil'
+import { Player } from './Player'
+import { PlayerControls } from './PlayerControls'
+import { UnitZ } from './MathUtils'
 
 interface TouchData {
   start: {

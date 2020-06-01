@@ -1,5 +1,5 @@
 import { Geometry, Vector2, Face3, Vector3 } from 'three'
-import { WormholeSpace } from '../wormholespace'
+import { WormholeSpace } from '../WormholeSpace'
 
 export class WormholeGeometry extends Geometry {
   constructor (

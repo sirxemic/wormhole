@@ -1,7 +1,7 @@
 import { Vector3, Quaternion } from 'three'
-import { PlayerControls } from './playercontrols'
-import { Player } from './player'
-import { UnitZ, UnitZNeg, UnitXNeg, UnitX, UnitY, UnitYNeg } from './mathutil'
+import { PlayerControls } from './PlayerControls'
+import { Player } from './Player'
+import { UnitZ, UnitZNeg, UnitXNeg, UnitX, UnitY, UnitYNeg } from './MathUtils'
 
 export class PlayerControlsKeyboard extends PlayerControls {
   private moveForward = false
