@@ -12,6 +12,7 @@ export class UiManager {
   renderer: Renderer
   controlsPicker: ControlsPicker
   player: Player
+  canvas: HTMLCanvasElement
 
   constructor (
     options: UiManagerOptions
@@ -19,6 +20,7 @@ export class UiManager {
     this.renderer = options.renderer
     this.controlsPicker = options.controlsPicker
     this.player = options.player
+    this.canvas = this.renderer.webglRenderer.domElement
   }
 
   startListening () {
@@ -49,11 +51,45 @@ export class UiManager {
       document.querySelector('.ui')!.classList.toggle('hidden', uiToggle.checked)
     }, false)
 
+    this.startListeningForMobileControls()
+    this.startListeningForDesktopControls()
+    this.startListeningForVrControls()
+
     this.controlsPicker.addEventListener('pick', e => {
       if (e.controls === 'mobile') {
         this.showMobileControls()
       }
     })
+  }
+
+  startListeningForMobileControls () {
+    document.addEventListener('touchstart', e => {
+      if ((e.target as HTMLElement).tagName === 'A') {
+        return
+      }
+
+      this.controlsPicker.pickControls('mobile')
+    })
+  }
+
+  startListeningForDesktopControls () {
+    this.canvas.addEventListener('click', () => {
+      this.canvas.requestPointerLock()
+    }, false)
+
+    document.addEventListener('pointerlockchange', (e) => {
+      if (document.pointerLockElement === this.canvas) {
+        this.controlsPicker.pickControls('desktop')
+      }
+    }, false)
+  }
+
+  startListeningForVrControls () {
+    const startVrButton = document.querySelector('.start-vr')!
+    if ((navigator as any).xr) {
+      startVrButton.classList.remove('hidden')
+      startVrButton.addEventListener('click', () => this.controlsPicker.pickControls('vr'))
+    }
   }
 
   removeSplashScreen () {

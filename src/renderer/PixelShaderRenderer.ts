@@ -1,47 +1,40 @@
 import {
   OrthographicCamera,
   Scene,
-  BufferGeometry,
-  BufferAttribute,
-  Mesh,
-  Renderer,
-  Material
+  WebGLRenderer,
+  RawShaderMaterial,
+  RenderTarget
 } from 'three'
+import { FullScreenMesh } from './FullScreenMesh'
 
-export class PixelShaderRenderer
-{
+export class PixelShaderRenderer {
   private camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1)
   private scene = new Scene()
 
-  public constructor(shaderMaterial: Material)
-  {
-    PixelShaderRenderer.initGeometry()
-
-    var mesh = new Mesh(PixelShaderRenderer.geometry, shaderMaterial)
-    mesh.frustumCulled = false
-    this.scene.add(mesh)
+  public constructor(
+    shaderMaterial: RawShaderMaterial,
+    readonly renderTarget: RenderTarget
+  ) {
+    this.scene.add(new FullScreenMesh(shaderMaterial))
   }
 
-  public render(renderer: Renderer)
-  {
-    renderer.render(this.scene, this.camera)
-  }
+  public render(renderer: WebGLRenderer) {
+    const previousRenderTarget = renderer.getRenderTarget()
+    const previousXrEnabled = renderer.xr.enabled
 
-  private static geometry: BufferGeometry
+    renderer.setRenderTarget(this.renderTarget)
+    renderer.xr.enabled = false
+    renderer.shadowMap.autoUpdate = false
 
-  private static initGeometry () {
-    if (this.geometry) {
-      return
+		renderer.state.buffers.depth.setMask(true)
+
+		if (renderer.autoClear === false) {
+      renderer.clear()
     }
-    this.geometry = new BufferGeometry()
-    const vertices = new BufferAttribute(new Float32Array([
-      -1, -1,
-      +1, +1,
-      -1, +1,
-      -1, -1,
-      +1, -1,
-      +1, +1
-    ]), 2)
-    this.geometry.addAttribute('position', vertices)
+
+    renderer.render(this.scene, this.camera)
+
+    renderer.xr.enabled = previousXrEnabled
+    renderer.setRenderTarget(previousRenderTarget)
   }
 }

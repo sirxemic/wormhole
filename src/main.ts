@@ -3,6 +3,7 @@ import { Player } from './Player'
 import { Renderer } from './Renderer'
 import { PlayerControlsKeyboard } from './PlayerControlsDesktop'
 import { PlayerControlsTouch } from './PlayerControlsMobile'
+import { PlayerControlsVr } from './PlayerControlsVr'
 import { WebGLRenderer } from 'three'
 import { UiManager } from './UiManager'
 import { ControlsPicker } from './ControlsPicker'
@@ -27,7 +28,8 @@ const renderer = new Renderer(webglRenderer, wormholeSpace, maxX, player)
 
 const controlsPicker = new ControlsPicker(
   new PlayerControlsKeyboard(player, webglRenderer.domElement),
-  new PlayerControlsTouch(player, webglRenderer.domElement)
+  new PlayerControlsTouch(player, webglRenderer.domElement),
+  new PlayerControlsVr(player, webglRenderer)
 )
 
 // A workaround for a bug in THREE.Clock.prototype.getDelta (only happening on older devices)

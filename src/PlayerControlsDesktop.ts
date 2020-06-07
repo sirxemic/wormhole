@@ -22,9 +22,7 @@ export class PlayerControlsKeyboard extends PlayerControls {
   ) {
     super(player)
 
-    this.requestPointerLock = this.requestPointerLock.bind(this)
     this.onMouseMove = this.onMouseMove.bind(this)
-    this.onPointerLockChange = this.onPointerLockChange.bind(this)
     this.onKeyDown = this.onKeyDown.bind(this)
     this.onKeyUp = this.onKeyUp.bind(this)
   }
@@ -42,18 +40,15 @@ export class PlayerControlsKeyboard extends PlayerControls {
     this.rotationSpeedX = 0
     this.rotationSpeedY = 0
 
-    this.domElement.addEventListener('click', this.requestPointerLock, false)
-    document.addEventListener('pointerlockchange', this.onPointerLockChange, false)
+    document.addEventListener('mousemove', this.onMouseMove, false)
     document.addEventListener('keydown', this.onKeyDown, false)
     document.addEventListener('keyup', this.onKeyUp, false)
   }
 
   public disable () {
-    this.domElement.removeEventListener('click', this.requestPointerLock, false)
-    document.removeEventListener('pointerlockchange', this.onPointerLockChange, false)
+    document.removeEventListener('mousemove', this.onMouseMove, false)
     document.removeEventListener('keydown', this.onKeyDown, false)
     document.removeEventListener('keyup', this.onKeyUp, false)
-
   }
 
   protected updateOrientation (delta: number) {
@@ -106,11 +101,11 @@ export class PlayerControlsKeyboard extends PlayerControls {
     this.velocity.lerp(targetVelocity, 1 - Math.exp(-delta * 10))
   }
 
-  private requestPointerLock () {
-    this.domElement.requestPointerLock()
-  }
-
   private onMouseMove (e: MouseEvent) {
+    if (document.pointerLockElement !== this.domElement) {
+      return
+    }
+
     this.rotationSpeedX -= 4 * (e.movementX || 0)
     if (this.freeMovement) {
       this.rotationSpeedY -= 4 * (e.movementY || 0)
@@ -182,15 +177,6 @@ export class PlayerControlsKeyboard extends PlayerControls {
       case 69:
         this.rotateRight = false
         break
-    }
-  }
-
-  private onPointerLockChange() {
-    if (document.pointerLockElement === this.domElement) {
-      document.addEventListener('mousemove', this.onMouseMove, false)
-    }
-    else {
-      document.removeEventListener('mousemove', this.onMouseMove, false)
     }
   }
 }

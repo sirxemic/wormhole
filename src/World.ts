@@ -1,7 +1,7 @@
-import { PixelShaderRenderer } from './PixelShaderRenderer'
+import { PixelShaderRenderer } from './renderer/PixelShaderRenderer'
 
-import { glProfile } from '../util/glSupport'
-import { WormholeSpace } from '../WormholeSpace'
+import { glProfile } from './util/glSupport'
+import { WormholeSpace } from './WormholeSpace'
 import {
   Vector2,
   Vector3,
@@ -16,16 +16,24 @@ import {
   FloatType,
   RawShaderMaterial,
   WebGLRenderer,
-  HalfFloatType
+  HalfFloatType,
+  Mesh,
+  PerspectiveCamera,
+  Scene,
+  Camera,
+  Vector4,
+  PlaneBufferGeometry,
+  MeshBasicMaterial,
+  DoubleSide
 } from 'three'
 
-import integrationVertexShader from '../shaders/integration.vs.glsl'
-import integrationFragmentShader from '../shaders/integration.fs.glsl'
-import renderVertexShader from '../shaders/render.vs.glsl'
-import renderFragmentShader from '../shaders/render.fs.glsl'
-import { generateMipmaps } from '../util/mipmaps'
-import { Player } from '../Player'
-import { UnitXNeg } from '../MathUtils'
+import integrationVertexShader from './shaders/integration.vs.glsl'
+import integrationFragmentShader from './shaders/integration.fs.glsl'
+import renderVertexShader from './shaders/render.vs.glsl'
+import renderFragmentShader from './shaders/render.fs.glsl'
+import { generateMipmaps } from './util/mipmaps'
+import { Player } from './Player'
+import { UnitXNeg } from './MathUtils'
 
 function loadSkybox(path: string, ext: string = 'jpg') {
   const files = [
@@ -57,17 +65,28 @@ function loadSkybox(path: string, ext: string = 'jpg') {
   return cubeTexture
 }
 
+const tempTranslation = new Vector3()
 const tempQuaternion = new Quaternion()
+const tempScale = new Vector3()
+const inverseMatrix = new Matrix4()
 const orientationMatrix = new Matrix4()
 const aspectFixMatrix = new Matrix4()
 
-export class SceneRenderer {
+export class World extends Mesh {
   commonUniforms: any
   integrationBuffer: WebGLRenderTarget
   integrationStep: PixelShaderRenderer
+  renderResultBuffer: WebGLRenderTarget
   renderStep: PixelShaderRenderer
 
-  constructor(space: WormholeSpace) {
+  constructor(
+    readonly space: WormholeSpace,
+    readonly player: Player
+  ) {
+    super()
+
+    this.frustumCulled = false
+
     // Init skybox textures
     const skybox1 = loadSkybox('textures/skybox1/')
     const skybox2 = loadSkybox('textures/skybox2/')
@@ -96,7 +115,10 @@ export class SceneRenderer {
       wrapS: ClampToEdgeWrapping,
       wrapT: ClampToEdgeWrapping,
       format: RGBAFormat,
-      type: glProfile.renderTargetType
+      type: glProfile.renderTargetType,
+      depthBuffer: false,
+      stencilBuffer: false,
+      generateMipmaps: false
     })
 
     const integrationShader = new RawShaderMaterial({
@@ -107,7 +129,7 @@ export class SceneRenderer {
       fragmentShader: '\n' + integrationFragmentShader
     })
 
-    this.integrationStep = new PixelShaderRenderer(integrationShader)
+    this.integrationStep = new PixelShaderRenderer(integrationShader, this.integrationBuffer)
 
     // Init render stuff
     const renderShader = new RawShaderMaterial({
@@ -123,44 +145,75 @@ export class SceneRenderer {
       fragmentShader: '\n' + renderFragmentShader
     })
 
-    this.renderStep = new PixelShaderRenderer(renderShader)
+    this.renderResultBuffer = new WebGLRenderTarget(1024, 1024, {
+      depthBuffer: false,
+      stencilBuffer: false,
+      generateMipmaps: false
+    })
+
+    this.renderStep = new PixelShaderRenderer(renderShader, this.renderResultBuffer)
+
+    this.onBeforeRender = this.beforeRender.bind(this)
+
+    this.geometry = new PlaneBufferGeometry( 2, 2, 32, 32 )
+    this.material = new MeshBasicMaterial({
+      map: this.renderResultBuffer.texture
+    })
   }
 
-  render (renderer: WebGLRenderer, player: Player) {
-    const camera = player.eyes
+  beforeRender (renderer: WebGLRenderer, scene: Scene, currentCamera: Camera) {
+    const camera = currentCamera as PerspectiveCamera
 
-    aspectFixMatrix.elements[0] = camera.projectionMatrixInverse.elements[0]
-    aspectFixMatrix.elements[5] = camera.projectionMatrixInverse.elements[5]
+    // Gotta decompose, get the inverse and aspect manually because the matrices of "XR cameras" are changed
+    // directly, without updating all these things
+    camera.matrixWorld.decompose(tempTranslation, tempQuaternion, tempScale)
+    inverseMatrix.getInverse(camera.projectionMatrix)
+
+    aspectFixMatrix.elements[0] = inverseMatrix.elements[0]
+    aspectFixMatrix.elements[5] = inverseMatrix.elements[5]
+    const aspect = inverseMatrix.elements[0] / inverseMatrix.elements[5]
+
+    this.position.copy(tempTranslation)
+    this.quaternion.copy(tempQuaternion)
+    this.scale.set(aspectFixMatrix.elements[0], aspectFixMatrix.elements[5], 1)
+    this.translateZ(inverseMatrix.elements[14])
+    this.updateMatrixWorld()
+
+    // Only compute for the left eye and reuse for the right eye
+    if (camera.layers.mask & 4) {
+      return
+    }
 
     // Update the angle range
-    orientationMatrix.makeRotationFromQuaternion(camera.getWorldQuaternion(tempQuaternion))
+    orientationMatrix.makeRotationFromQuaternion(tempQuaternion)
 
     const zAxis = new Vector3()
     zAxis.setFromMatrixColumn(orientationMatrix, 2)
 
     const angleFromZ = zAxis.angleTo(UnitXNeg)
 
-    const halfDiagFov = Math.atan(Math.tan(MathUtils.DEG2RAD * camera.fov / 2) * Math.sqrt(camera.aspect * camera.aspect + 1))
+    const halfDiagFov = Math.atan(inverseMatrix.elements[5] * Math.sqrt(aspect * aspect + 1))
     this.commonUniforms.uAngleRange.value.set(
       Math.max(0, angleFromZ - halfDiagFov),
       Math.min(Math.PI, angleFromZ + halfDiagFov)
     )
 
     // Update the camera-related uniforms
-    this.commonUniforms.uCameraPosition.value.copy(player.position)
+    this.commonUniforms.uCameraPosition.value.copy(this.player.position)
     this.commonUniforms.uCameraOrientation.value.copy(orientationMatrix)
     this.commonUniforms.uCameraOrientation.value.multiply(aspectFixMatrix)
 
-    // Integrate...
-    renderer.setRenderTarget(this.integrationBuffer)
     this.integrationStep.render(renderer)
-    renderer.setRenderTarget(null)
-
-    // And render.
     this.renderStep.render(renderer)
+
+    // WebXR cameras have viewports which need to be restored
+    const viewport = (currentCamera as any).viewport as Vector4
+    if (viewport) {
+      renderer.state.viewport(viewport)
+    }
   }
 
   setSize (width: number, height: number) {
-
+    this.renderResultBuffer.setSize(width, height)
   }
 }

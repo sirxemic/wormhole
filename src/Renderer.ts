@@ -1,14 +1,17 @@
-import { WebGLRenderer, MathUtils } from 'three'
+import { WebGLRenderer, MathUtils, Scene, Mesh, BoxBufferGeometry, MeshBasicMaterial, MeshNormalMaterial, PerspectiveCamera } from 'three'
 import { WormholeSpace } from './WormholeSpace'
-import { SceneRenderer } from './renderer/SceneRenderer'
+import { World } from './World'
 import { DiagramRenderer } from './renderer/DiagramRenderer'
 import { Player } from './Player'
 
-export class Renderer
-{
+export class Renderer {
   showDiagram = true
-  sceneRenderer: SceneRenderer
+  world: World
   diagramRenderer: DiagramRenderer
+
+  scene = new Scene()
+
+  isXr = false
 
   constructor(
     readonly webglRenderer: WebGLRenderer,
@@ -18,23 +21,44 @@ export class Renderer
   ) {
     this.showDiagram = true
 
-    this.sceneRenderer = new SceneRenderer(space)
+    this.world = new World(space, player)
     this.diagramRenderer = new DiagramRenderer(space, diagramMax)
+
+    this.scene.add(this.world)
+
     this.resize()
     window.addEventListener('resize', this.resize.bind(this), false)
   }
 
   getWidth () {
-    return window.innerWidth
+    return this.webglRenderer.xr.isPresenting ? 1024 : window.innerWidth
   }
 
   getHeight () {
-    return window.innerHeight
+    return this.webglRenderer.xr.isPresenting ? 1024 : window.innerHeight
   }
 
   render () {
+    if (this.webglRenderer.xr.isPresenting) {
+      if (!this.isXr) {
+        this.resize()
+        this.isXr = true
+      }
+
+      this.renderVr()
+    } else {
+      if (this.isXr) {
+        this.resize()
+        this.isXr = false
+      }
+
+      this.renderNormal()
+    }
+  }
+
+  renderNormal () {
     this.webglRenderer.setViewport(0, 0, this.getWidth(), this.getHeight())
-    this.sceneRenderer.render(this.webglRenderer, this.player)
+    this.webglRenderer.render(this.scene, this.player.eyes)
 
     if (this.showDiagram) {
       this.webglRenderer.setViewport(0, 0, this.getWidth() / 3, this.getHeight() / 3)
@@ -44,15 +68,21 @@ export class Renderer
     }
   }
 
+  renderVr () {
+    this.webglRenderer.render(this.scene, this.player.eyes)
+  }
+
   resize () {
     const width = this.getWidth()
     const height = this.getHeight()
+    const pixelRatio = this.webglRenderer.getPixelRatio()
+    const aspectRatio = width / height
 
     this.webglRenderer.setSize(width, height)
-    this.sceneRenderer.setSize(width, height)
-    this.diagramRenderer.setRatio(width / height)
+    this.world.setSize(width * pixelRatio, height * pixelRatio)
+    this.diagramRenderer.setRatio(aspectRatio)
 
-    this.player.eyes.aspect = width / height
+    this.player.eyes.aspect = aspectRatio
 
     // When the screen is vertical, the horizontal fov needs to be 60 degrees instead
     const minFov = 60

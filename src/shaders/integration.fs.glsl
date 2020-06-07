@@ -1,4 +1,4 @@
-precision highp float;
+precision mediump float;
 
 @import ./common;
 
@@ -82,8 +82,7 @@ void integrate2D(inout State2D ray) {
   }
 }
 
-void main()
-{
+void main() {
   float distanceToWormhole = max(0.0, abs(uCameraPosition.x) - uThroatLength);
 
   float directionX = cos(vTheta);

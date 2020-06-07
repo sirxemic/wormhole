@@ -1,7 +1,7 @@
 import { PlayerControls } from './PlayerControls'
 import { EventDispatcher } from './EventDispatcher'
 
-type ControlType = 'desktop' | 'mobile'
+type ControlType = 'desktop' | 'mobile' | 'vr'
 
 export class ControlsPicker extends EventDispatcher<{ controls: ControlType }> {
   currentType?: ControlType
@@ -11,42 +11,20 @@ export class ControlsPicker extends EventDispatcher<{ controls: ControlType }> {
 
   constructor (
     desktopControls: PlayerControls,
-    mobileControls: PlayerControls
+    mobileControls: PlayerControls,
+    vrControls: PlayerControls
   ) {
     super()
 
     this.allControls = {
       'desktop': desktopControls,
-      'mobile': mobileControls
+      'mobile': mobileControls,
+      'vr': vrControls
     }
-
-    this.pickKeyboardControls = this.pickKeyboardControls.bind(this)
-    this.pickTouchControls = this.pickTouchControls.bind(this)
-
-    if ('requestPointerLock' in document.body) {
-      document.addEventListener('mousemove', this.pickKeyboardControls)
-      document.addEventListener('keydown', this.pickKeyboardControls)
-    }
-
-    document.addEventListener('touchstart', e => {
-      if ((e.target as HTMLElement).tagName === 'A') {
-        return
-      }
-
-      this.pickTouchControls()
-    })
   }
 
   getCurrentPlayerControls () {
     return this.currentControls
-  }
-
-  pickKeyboardControls () {
-    this.pickControls('desktop')
-  }
-
-  pickTouchControls () {
-    this.pickControls('mobile')
   }
 
   pickControls (type: ControlType) {
