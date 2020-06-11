@@ -7,7 +7,6 @@ import {
   Vector3,
   Matrix4,
   Quaternion,
-  MathUtils,
   WebGLRenderTarget,
   CubeTexture,
   CubeTextureLoader,
@@ -23,8 +22,7 @@ import {
   Camera,
   Vector4,
   PlaneBufferGeometry,
-  MeshBasicMaterial,
-  DoubleSide
+  MeshBasicMaterial
 } from 'three'
 
 import integrationVertexShader from './shaders/integration.vs.glsl'
@@ -121,12 +119,19 @@ export class World extends Mesh {
       generateMipmaps: false
     })
 
+    // For some reason we get visually better results when using highp for half-float textures and
+    // mediump for float textures. I have no idea why.
+    // Tested with iPhone SE (2016), iPhone XS, Oculus Quest and PC
+    let fragmentShader = integrationFragmentShader
+    if (glProfile.renderTargetType === HalfFloatType) {
+      fragmentShader = fragmentShader.replace('precision mediump', 'precision highp')
+    }
+
     const integrationShader = new RawShaderMaterial({
       uniforms: { ...this.commonUniforms },
       defines: commonDefines,
-      // Prepend with a newline as a workaround due to a js bug
-      vertexShader: '\n' + integrationVertexShader,
-      fragmentShader: '\n' + integrationFragmentShader
+      vertexShader: integrationVertexShader,
+      fragmentShader
     })
 
     this.integrationStep = new PixelShaderRenderer(integrationShader, this.integrationBuffer)
@@ -140,9 +145,8 @@ export class World extends Mesh {
         ...this.commonUniforms
       },
       defines: commonDefines,
-      // Prepend with a newline as a workaround due to a js bug
-      vertexShader: '\n' + renderVertexShader,
-      fragmentShader: '\n' + renderFragmentShader
+      vertexShader: renderVertexShader,
+      fragmentShader: renderFragmentShader
     })
 
     this.renderResultBuffer = new WebGLRenderTarget(1024, 1024, {
@@ -157,8 +161,11 @@ export class World extends Mesh {
 
     this.geometry = new PlaneBufferGeometry( 2, 2, 32, 32 )
     this.material = new MeshBasicMaterial({
-      map: this.renderResultBuffer.texture
+      map: this.renderResultBuffer.texture,
+      depthWrite: false
     })
+
+    this.renderOrder = -1
   }
 
   beforeRender (renderer: WebGLRenderer, scene: Scene, currentCamera: Camera) {
@@ -169,14 +176,17 @@ export class World extends Mesh {
     camera.matrixWorld.decompose(tempTranslation, tempQuaternion, tempScale)
     inverseMatrix.getInverse(camera.projectionMatrix)
 
-    aspectFixMatrix.elements[0] = inverseMatrix.elements[0]
-    aspectFixMatrix.elements[5] = inverseMatrix.elements[5]
-    const aspect = inverseMatrix.elements[0] / inverseMatrix.elements[5]
+    const e0 = inverseMatrix.elements[0]
+    const e5 = inverseMatrix.elements[5]
+    const aspect = e0 / e5
+
+    aspectFixMatrix.elements[0] = e0
+    aspectFixMatrix.elements[5] = e5
 
     this.position.copy(tempTranslation)
     this.quaternion.copy(tempQuaternion)
-    this.scale.set(aspectFixMatrix.elements[0], aspectFixMatrix.elements[5], 1)
-    this.translateZ(inverseMatrix.elements[14])
+    this.scale.set(e0, e5, 1)
+    this.translateZ(-1)
     this.updateMatrixWorld()
 
     // Only compute for the left eye and reuse for the right eye
@@ -192,7 +202,7 @@ export class World extends Mesh {
 
     const angleFromZ = zAxis.angleTo(UnitXNeg)
 
-    const halfDiagFov = Math.atan(inverseMatrix.elements[5] * Math.sqrt(aspect * aspect + 1))
+    const halfDiagFov = Math.atan(e5 * Math.sqrt(aspect * aspect + 1))
     this.commonUniforms.uAngleRange.value.set(
       Math.max(0, angleFromZ - halfDiagFov),
       Math.min(Math.PI, angleFromZ + halfDiagFov)

@@ -1,4 +1,4 @@
-import { WebGLRenderer, MathUtils, Scene, Mesh, BoxBufferGeometry, MeshBasicMaterial, MeshNormalMaterial, PerspectiveCamera } from 'three'
+import { WebGLRenderer, MathUtils, Scene } from 'three'
 import { WormholeSpace } from './WormholeSpace'
 import { World } from './World'
 import { DiagramRenderer } from './renderer/DiagramRenderer'

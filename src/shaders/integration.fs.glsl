@@ -28,7 +28,7 @@ void step2D(inout State2D ray) {
     // Use backwards euler integration
     float h = delta,
           h2 = h * h,
-          x = (ray.position.x / abs(ray.position.x)) * distanceToWormhole,
+          x = sign(ray.position.x) * distanceToWormhole,
           x2 = x * x,
           b2 = uRadiusSquared,
           dx = ray.direction.x,
