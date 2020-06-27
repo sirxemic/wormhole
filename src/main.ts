@@ -1,71 +1,104 @@
 import { WormholeSpace } from './WormholeSpace'
 import { Player } from './Player'
 import { Renderer } from './Renderer'
+import { PlayerControls } from './PlayerControls'
 import { PlayerControlsKeyboard } from './PlayerControlsDesktop'
 import { PlayerControlsTouch } from './PlayerControlsMobile'
 import { PlayerControlsVr } from './PlayerControlsVr'
 import { WebGLRenderer } from 'three'
 import { UiManager } from './UiManager'
-import { ControlsPicker } from './ControlsPicker'
+import { MainInterface, ControlScheme } from './types'
 
-const webglRenderer = new WebGLRenderer()
-document.querySelector('#canvas-wrapper')!.appendChild(webglRenderer.domElement)
+class Main implements MainInterface {
+  canvas: HTMLCanvasElement
+  allControls: Record<ControlScheme, PlayerControls>
+  currentControls?: PlayerControls
 
-webglRenderer.setPixelRatio(window.devicePixelRatio)
-webglRenderer.autoClear = false
-webglRenderer.xr.enabled = true
+  wormholeSpace = new WormholeSpace(1.5, 5)
+  player: Player
+  renderer: Renderer
+  ui: UiManager
+  maxX: number
+  prevTime = 0
 
-const wormholeSpace = new WormholeSpace(1.5, 5)
+  constructor () {
+    const webglRenderer = new WebGLRenderer()
+    this.canvas = webglRenderer.domElement
+    document.querySelector('#canvas-wrapper')!.appendChild(this.canvas)
 
-const maxX = wormholeSpace.radius * 5.5 + wormholeSpace.throatLength
-const playerX = wormholeSpace.radius * 2 + wormholeSpace.throatLength
+    webglRenderer.setPixelRatio(window.devicePixelRatio)
+    webglRenderer.autoClear = false
+    webglRenderer.xr.enabled = true
 
-const player = new Player(wormholeSpace)
-player.position.set(playerX, Math.PI * 0.5, 0)
-player.rotateY(Math.PI * 0.5)
+    this.maxX = this.wormholeSpace.radius * 5.5 + this.wormholeSpace.throatLength
+    const playerX = this.wormholeSpace.radius * 2 + this.wormholeSpace.throatLength
 
-const renderer = new Renderer(webglRenderer, wormholeSpace, maxX, player)
+    this.player = new Player(this.wormholeSpace)
+    this.player.position.set(playerX, Math.PI * 0.5, 0)
+    this.player.rotateY(Math.PI * 0.5)
 
-const controlsPicker = new ControlsPicker(
-  new PlayerControlsKeyboard(player, webglRenderer.domElement),
-  new PlayerControlsTouch(player, webglRenderer.domElement),
-  new PlayerControlsVr(player, webglRenderer)
-)
+    this.renderer = new Renderer(webglRenderer, this.wormholeSpace, this.maxX, this.player)
 
-// A workaround for a bug in THREE.Clock.prototype.getDelta (only happening on older devices)
-;(window as any).performance = window.performance || Date
+    this.allControls = {
+      desktop: new PlayerControlsKeyboard(this.player, this.canvas),
+      mobile: new PlayerControlsTouch(this.player, this.canvas),
+      vr: new PlayerControlsVr(this.player, webglRenderer)
+    }
 
-let prevTime = 0
-webglRenderer.setAnimationLoop((time: number) => {
-  let delta = (time - prevTime) / 1000
-  prevTime = time
+    this.allControls.vr.disableAction.addListener(() => this.clearControls())
 
-  // First frame the delta will be close to zero
-  if (delta < 0.001) return
+    webglRenderer.setAnimationLoop(this.loop.bind(this))
 
-  // If delta becomes too big we might get weird stuff happening
-  if (delta > 0.1) {
-    delta = 0.1
+    this.ui = new UiManager(this)
+    this.ui.startListening()
   }
 
-  controlsPicker.getCurrentPlayerControls()?.update(delta)
+  async setControls (scheme: ControlScheme) {
+    if (this.currentControls === this.allControls[scheme]) {
+      return
+    }
 
-  player.updateMatrixWorld()
-
-  if (player.position.x > maxX) {
-    player.position.x = maxX
+    await this.currentControls?.disable()
+    this.currentControls = this.allControls[scheme]
+    await this.currentControls.enable()
   }
-  else if (player.position.x < -maxX) {
-    player.position.x = -maxX
+
+  clearControls () {
+    this.currentControls?.disable()
+    this.currentControls = undefined
   }
 
-  renderer.render()
-})
+  loop (time: number) {
+    let delta = (time - this.prevTime) / 1000
+    this.prevTime = time
 
-const manager = new UiManager({
-  renderer,
-  controlsPicker,
-  player
-})
+    // First frame the delta will be close to zero
+    if (delta < 0.001) return
 
-manager.startListening()
+    // If delta becomes too big we might get weird stuff happening
+    if (delta > 0.1) {
+      delta = 0.1
+    }
+
+    this.currentControls?.update(delta)
+
+    this.player.updateMatrixWorld()
+
+    if (this.player.position.x > this.maxX) {
+      this.player.position.x = this.maxX
+    }
+    else if (this.player.position.x < -this.maxX) {
+      this.player.position.x = -this.maxX
+    }
+
+    this.renderer.update(delta)
+    this.renderer.render()
+  }
+}
+
+// WebXR only works in secure contexts
+if (location.protocol === 'http:') {
+  location.replace(location.href.replace('http:', 'https:'))
+} else {
+  new Main()
+}

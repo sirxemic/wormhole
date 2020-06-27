@@ -1,8 +1,9 @@
-import { WebGLRenderer, MathUtils, Scene } from 'three'
+import { WebGLRenderer, MathUtils, Scene, Color, Vector3, Mesh, BoxBufferGeometry, MeshNormalMaterial, AmbientLight, DirectionalLight, MeshLambertMaterial } from 'three'
 import { WormholeSpace } from './WormholeSpace'
 import { World } from './World'
 import { DiagramRenderer } from './renderer/DiagramRenderer'
 import { Player } from './Player'
+import { VRInstructions } from './VRInstructions'
 
 export class Renderer {
   showDiagram = true
@@ -12,6 +13,7 @@ export class Renderer {
   scene = new Scene()
 
   isXr = false
+  vrInstructions: VRInstructions
 
   constructor(
     readonly webglRenderer: WebGLRenderer,
@@ -25,6 +27,19 @@ export class Renderer {
     this.diagramRenderer = new DiagramRenderer(space, diagramMax)
 
     this.scene.add(this.world)
+    this.scene.add(this.player)
+
+    this.scene.add(new AmbientLight(0xffffff, 2))
+
+    this.vrInstructions = new VRInstructions(this.player)
+    this.vrInstructions.hide()
+
+    const hideVrControls = () => this.vrInstructions.hide()
+
+    this.webglRenderer.xr.getController(0).addEventListener('selectstart', hideVrControls)
+    this.webglRenderer.xr.getController(1).addEventListener('selectstart', hideVrControls)
+
+    this.scene.add(this.vrInstructions)
 
     this.resize()
     window.addEventListener('resize', this.resize.bind(this), false)
@@ -38,10 +53,15 @@ export class Renderer {
     return this.webglRenderer.xr.isPresenting ? 1024 : window.innerHeight
   }
 
+  update (delta: number) {
+    this.vrInstructions.update(delta)
+  }
+
   render () {
     if (this.webglRenderer.xr.isPresenting) {
       if (!this.isXr) {
         this.resize()
+        this.vrInstructions.show()
         this.isXr = true
       }
 
@@ -49,6 +69,7 @@ export class Renderer {
     } else {
       if (this.isXr) {
         this.resize()
+        this.vrInstructions.visible = false
         this.isXr = false
       }
 

@@ -58,7 +58,6 @@ void step2D(inout State2D ray) {
     }
     ray.throatTravelDistance += abs(delta);
   }
-
   ray.position += ray.direction * delta;
 }
 
@@ -78,7 +77,7 @@ void normalizeDirection2D(inout State2D ray) {
 void integrate2D(inout State2D ray) {
   for (int i = 0; i < 200; i++) {
     step2D(ray);
-    normalizeDirection2D(ray);
+    // normalizeDirection2D(ray);
   }
 }
 

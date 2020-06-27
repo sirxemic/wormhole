@@ -1,30 +1,30 @@
-import { Renderer } from './Renderer'
-import { ControlsPicker } from './ControlsPicker'
-import { Player } from './Player'
-
-export interface UiManagerOptions {
-  renderer: Renderer
-  controlsPicker: ControlsPicker
-  player: Player
-}
+import { MainInterface, ControlScheme } from './types'
 
 export class UiManager {
-  renderer: Renderer
-  controlsPicker: ControlsPicker
-  player: Player
-  canvas: HTMLCanvasElement
+  vrButton = document.querySelector('.start-vr') as HTMLButtonElement
+  movementToggle = document.querySelector('[name=hide-ui]') as HTMLInputElement
 
   constructor (
-    options: UiManagerOptions
-  ) {
-    this.renderer = options.renderer
-    this.controlsPicker = options.controlsPicker
-    this.player = options.player
-    this.canvas = this.renderer.webglRenderer.domElement
+    readonly main: MainInterface
+  ) {}
+
+  showElement (el: Element) {
+    el.classList.remove('hidden')
+  }
+
+  hideElement (el: Element) {
+    el.classList.add('hidden')
+  }
+
+  toggleElement (el: Element, force?: boolean) {
+    el.classList.toggle('hidden', force)
   }
 
   startListening () {
     this.removeSplashScreen = this.removeSplashScreen.bind(this)
+    this.updateFreeMovement = this.updateFreeMovement.bind(this)
+    this.showVrButton = this.showVrButton.bind(this)
+    this.hideVrButton = this.hideVrButton.bind(this)
 
     document.body.addEventListener('click', (e) => {
       if ((e.target as HTMLElement).tagName === 'A') {
@@ -33,32 +33,15 @@ export class UiManager {
       this.removeSplashScreen()
     }, false)
 
-    const uiToggle = document.querySelector('[name=hide-ui]') as HTMLInputElement
-
-    uiToggle.addEventListener('click', async (e) => {
-      if (uiToggle.checked) {
-        try {
-          await this.requestFreeMovement()
-          this.renderer.showDiagram = false
-        } catch (e) {
-          uiToggle.checked = false
-        }
-      } else {
-        this.renderer.showDiagram = true
-        this.clearFreeMovement()
-      }
-
-      document.querySelector('.ui')!.classList.toggle('hidden', uiToggle.checked)
-    }, false)
+    this.movementToggle.checked = false
+    this.movementToggle.addEventListener('click', this.updateFreeMovement, false)
 
     this.startListeningForMobileControls()
     this.startListeningForDesktopControls()
     this.startListeningForVrControls()
 
-    this.controlsPicker.addEventListener('pick', e => {
-      if (e.controls === 'mobile') {
-        this.showMobileControls()
-      }
+    this.main.allControls.vr.disableAction.addListener(() => {
+      this.showVrButton()
     })
   }
 
@@ -68,43 +51,77 @@ export class UiManager {
         return
       }
 
-      this.controlsPicker.pickControls('mobile')
+      this.setControls('mobile')
     })
   }
 
   startListeningForDesktopControls () {
-    this.canvas.addEventListener('click', () => {
-      this.canvas.requestPointerLock()
+    const canvas = this.main.canvas
+    canvas.addEventListener('click', () => {
+      if (this.main.currentControls !== this.main.allControls.vr) {
+        canvas.requestPointerLock()
+      }
     }, false)
 
     document.addEventListener('pointerlockchange', (e) => {
-      if (document.pointerLockElement === this.canvas) {
-        this.controlsPicker.pickControls('desktop')
+      if (document.pointerLockElement === canvas) {
+        this.setControls('desktop')
       }
     }, false)
   }
 
-  startListeningForVrControls () {
-    const startVrButton = document.querySelector('.start-vr')!
-    if ((navigator as any).xr) {
-      startVrButton.classList.remove('hidden')
-      startVrButton.addEventListener('click', () => this.controlsPicker.pickControls('vr'))
+  async startListeningForVrControls () {
+    if (!(navigator as any).xr) {
+      const { default: WebXRPolyfill } = await import('webxr-polyfill')
+      new WebXRPolyfill({ cardboard: false })
+    }
+
+    const xr = (navigator as any).xr
+    if (!xr) {
+      return
+    }
+
+    const supported = await xr.isSessionSupported('immersive-vr')
+    if (supported) {
+      this.showElement(this.vrButton)
+      this.vrButton.addEventListener('click', () => this.setControls('vr'))
+    }
+  }
+
+  setControls (controls: ControlScheme) {
+    this.main.setControls(controls)
+    this.updateFreeMovement()
+    switch (controls) {
+      case 'mobile':
+        this.showMobileControls()
+        break
+      case 'vr':
+        this.hideVrButton()
+        break
     }
   }
 
   removeSplashScreen () {
-    document.querySelector('.splash')!.classList.add('hidden')
+    this.hideElement(document.querySelector('.splash')!)
 
     document.body.removeEventListener('click', this.removeSplashScreen, false)
+  }
+
+  showVrButton () {
+    this.showElement(this.vrButton)
+  }
+
+  hideVrButton () {
+    this.hideElement(this.vrButton)
   }
 
   showMobileControls () {
     this.removeSplashScreen()
 
     const element = document.querySelector('.mobile-instructions')!
-    element.classList.remove('hidden')
-    function dismiss () {
-      element.classList.add('hidden')
+    this.showElement(element)
+    const dismiss = () => {
+      this.hideElement(element)
 
       document.removeEventListener('touchstart', dismiss, false)
     }
@@ -112,12 +129,28 @@ export class UiManager {
     document.addEventListener('touchstart', dismiss, false)
   }
 
+  async updateFreeMovement () {
+    if (this.movementToggle.checked) {
+      try {
+        await this.requestFreeMovement()
+        this.main.renderer.showDiagram = false
+      } catch (e) {
+        this.movementToggle.checked = false
+      }
+    } else {
+      this.main.renderer.showDiagram = true
+      this.clearFreeMovement()
+    }
+
+    this.toggleElement(document.querySelector('.ui')!, this.movementToggle.checked)
+  }
+
   requestFreeMovement() {
-    return this.controlsPicker.getCurrentPlayerControls()?.requestFreeMovement()
+    return this.main.currentControls?.requestFreeMovement()
   }
 
   clearFreeMovement() {
-    const player = this.player
+    const player = this.main.player
 
     player.position.y = Math.PI * 0.5
 
@@ -129,6 +162,6 @@ export class UiManager {
     player.eyes.quaternion.z = 0
     player.eyes.quaternion.normalize()
 
-    this.controlsPicker.getCurrentPlayerControls()?.stopFreeMovement()
+    this.main.currentControls?.stopFreeMovement()
   }
 }

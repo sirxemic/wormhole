@@ -27,7 +27,7 @@ export class PlayerControlsKeyboard extends PlayerControls {
     this.onKeyUp = this.onKeyUp.bind(this)
   }
 
-  public enable () {
+  public onEnable () {
     this.moveForward = false
     this.moveBackward = false
     this.moveLeft = false
@@ -45,7 +45,7 @@ export class PlayerControlsKeyboard extends PlayerControls {
     document.addEventListener('keyup', this.onKeyUp, false)
   }
 
-  public disable () {
+  public onDisable () {
     document.removeEventListener('mousemove', this.onMouseMove, false)
     document.removeEventListener('keydown', this.onKeyDown, false)
     document.removeEventListener('keyup', this.onKeyUp, false)
@@ -124,7 +124,6 @@ export class PlayerControlsKeyboard extends PlayerControls {
         break
       case 38:
       case 87:
-      case 90: // Z for AZERTY keyboards
         this.moveForward = true
         break
       case 40:
@@ -158,7 +157,6 @@ export class PlayerControlsKeyboard extends PlayerControls {
         break
       case 38:
       case 87:
-      case 90: // Z for AZERTY keyboards
         this.moveForward = false
         break
       case 40:

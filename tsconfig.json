@@ -1,11 +1,15 @@
 {
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
+    "target": "ES2016",
+    "module": "esnext",
     "lib": ["dom", "webworker"],
     "strict": true,
     "noImplicitAny": true,
     "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "downlevelIteration": true,
+    "baseUrl": ".",
+    "rootDir": "./src",
+    "moduleResolution": "node"
   }
 }
