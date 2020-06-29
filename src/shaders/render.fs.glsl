@@ -15,16 +15,9 @@ uniform vec2 uAngleRange;
 
 varying vec3 vRayDir;
 
-struct State3D {
-  vec3 position;
-  vec3 direction;
-  float throatTravelDistance;
-};
-
 /**
  *  Util
  */
-
 void sphericalToCartesian(vec2 position, vec2 direction, out vec3 outPos, out vec3 outDir) {
   float sinY = sin(position.y),
         cosY = cos(position.y),
@@ -39,20 +32,23 @@ void sphericalToCartesian(vec2 position, vec2 direction, out vec3 outPos, out ve
   );
 }
 
+// Not using structs for the intermediate state (position, direction, throatTravelDistance) because
+// for some reason that heavily impacts the visual quality
+
 // Integrate!
-void integrate3D(inout State3D ray, out vec3 cubeCoord) {
+void integrate3D(inout vec3 position, vec3 direction, inout float throatTravelDistance, out vec3 cubeCoord) {
   // We integrate in a 2D plane so we don't have to deal with the poles of spherical coordinates, where
   // integration might go out of hand.
 
   // Determine the X- and Y-axes in this plane
   vec3 pos3D, dir3D, axisX, axisY, axisZ;
-  sphericalToCartesian(ray.position.zy, ray.direction.zy, pos3D, dir3D);
+  sphericalToCartesian(position.zy, direction.zy, pos3D, dir3D);
 
   axisX = normalize(pos3D);
   axisZ = cross(axisX, normalize(dir3D));
   axisY = cross(axisZ, axisX);
 
-  float theta = acos(ray.direction.x);
+  float theta = acos(direction.x);
   float x = (theta - uAngleRange.x) / (uAngleRange.y - uAngleRange.x);
   vec4 finalIntegrationState = texture2D(uIntegrationBuffer, vec2(x, 0.5));
 
@@ -67,49 +63,49 @@ void integrate3D(inout State3D ray, out vec3 cubeCoord) {
 
   // Transform the 2D position and direction back into 3D
   // Though only position.x is used, we don't transform the other ray attributes
-  ray.position.x = finalIntegrationState.z;
-  ray.throatTravelDistance = finalIntegrationState.w;
+  position.x = finalIntegrationState.z;
+  throatTravelDistance = finalIntegrationState.w;
 }
 
 // Transform a direction given in flat spacetime coordinates to one of the same angle
 // in wormhole spacetime coordinates.
-void adjustDirection(inout State3D ray) {
-  float distanceToWormhole = max(0.0, abs(ray.position.x) - uThroatLength);
+void adjustDirection(vec3 position, inout vec3 direction) {
+  float distanceToWormhole = max(0.0, abs(position.x) - uThroatLength);
 
   float r = sqrt(distanceToWormhole * distanceToWormhole + uRadiusSquared);
-  ray.direction.y /= r;
-  ray.direction.z /= r * sin(ray.position.y);
+  direction.y /= r;
+  direction.z /= r * sin(position.y);
 }
 
 // Get the final color given a position and direction.
-vec4 getColor(State3D ray, vec3 cubeCoord) {
+vec4 getColor(vec3 position, float throatTravelDistance, vec3 cubeCoord) {
   vec3 skybox1Color = textureCube(uSkybox1, cubeCoord).rgb;
   vec3 skybox2Color = textureCube(uSkybox2, cubeCoord).rgb;
 
-  float merge = 0.5 - clamp(ray.position.x, -0.5, 0.5);
+  float merge = 0.5 - clamp(position.x, -0.5, 0.5);
   vec3 color = mix(skybox1Color, skybox2Color, merge);
 
   // Prettify the thing where everything becomes infinite
   float cutoffStart = uThroatLength * THROAT_FADE_START;
   float cutoffLength = uThroatLength * THROAT_FADE_LENGTH;
 
-  float blackFade = clamp((ray.throatTravelDistance - cutoffStart) / cutoffLength, 0.0, 1.0);
+  float blackFade = clamp((throatTravelDistance - cutoffStart) / cutoffLength, 0.0, 1.0);
 
   return vec4(mix(color, vec3(0.0), blackFade), 1.0);
 }
 
 void main()
 {
-  State3D ray;
-  ray.position = uCameraPosition;
-  ray.direction = normalize(vRayDir);
+  vec3 position = uCameraPosition;
+  vec3 direction = normalize(vRayDir);
+  float throatTravelDistance = 0.0;
 
-  adjustDirection(ray);
+  adjustDirection(position, direction);
 
   vec3 cubeCoord;
 
   // Integrate in wormhole space coordinates
-  integrate3D(ray, cubeCoord);
+  integrate3D(position, direction, throatTravelDistance, cubeCoord);
 
-  gl_FragColor = getColor(ray, cubeCoord);
+  gl_FragColor = getColor(position, throatTravelDistance, cubeCoord);
 }

@@ -1,4 +1,4 @@
-precision mediump float;
+precision highp float;
 
 @import ./common;
 
@@ -9,15 +9,12 @@ uniform float uThroatLength;
 
 varying float vTheta;
 
-struct State2D {
-  vec2 position;
-  vec2 direction;
-  float throatTravelDistance;
-};
+// Not using structs for the intermediate state (position, direction, throatTravelDistance) because
+// for some reason that heavily impacts the visual quality
 
 // Do an integration step in 2D wormhole space.
-void step2D(inout State2D ray) {
-  float distanceToWormhole = abs(ray.position.x) - uThroatLength;
+void step2D(inout vec2 position, inout vec2 direction, inout float throatTravelDistance) {
+  float distanceToWormhole = abs(position.x) - uThroatLength;
 
   float delta;
 
@@ -28,12 +25,12 @@ void step2D(inout State2D ray) {
     // Use backwards euler integration
     float h = delta,
           h2 = h * h,
-          x = sign(ray.position.x) * distanceToWormhole,
+          x = sign(position.x) * distanceToWormhole,
           x2 = x * x,
           b2 = uRadiusSquared,
-          dx = ray.direction.x,
+          dx = direction.x,
           dx2 = dx * dx,
-          dy = ray.direction.y,
+          dy = direction.y,
           dy2 = dy * dy,
 
           r2 = b2 + x2,
@@ -46,37 +43,37 @@ void step2D(inout State2D ray) {
         -2.0 * (x2 * (x - hdx) + b2 * (x + hdx)) * (dx + h * x * dy2)
     ) * dy * h / (r2 * (r2 + s) - t * (r2 - s) * dy2);
 
-    ray.direction += directionDelta;
+    direction += directionDelta;
   }
   else {
     // Inside the wormhole spacetime is flat, so just compute the distance to the mouth.
-    if (ray.direction.x < 0.0) {
-      delta = (ray.position.x + uThroatLength) / -ray.direction.x;
+    if (direction.x < 0.0) {
+      delta = (position.x + uThroatLength) / -direction.x;
     }
     else {
-      delta = (uThroatLength - ray.position.x) / ray.direction.x;
+      delta = (uThroatLength - position.x) / direction.x;
     }
-    ray.throatTravelDistance += abs(delta);
+    throatTravelDistance += abs(delta);
   }
-  ray.position += ray.direction * delta;
+  position += direction * delta;
 }
 
 // Normalize the direction according to the curvature.
-void normalizeDirection2D(inout State2D ray) {
-  float distanceToWormhole = max(0.0, abs(ray.position.x) - uThroatLength);
+void normalizeDirection2D(vec2 position, inout vec2 direction) {
+  float distanceToWormhole = max(0.0, abs(position.x) - uThroatLength);
 
   float magnitude = sqrt(
-    ray.direction.x * ray.direction.x +
-    (distanceToWormhole * distanceToWormhole + uRadiusSquared) * ray.direction.y * ray.direction.y
+    direction.x * direction.x +
+    (distanceToWormhole * distanceToWormhole + uRadiusSquared) * direction.y * direction.y
   );
 
-  ray.direction /= magnitude;
+  direction /= magnitude;
 }
 
 // Integrate in 2D wormhole space.
-void integrate2D(inout State2D ray) {
+void integrate2D(inout vec2 position, inout vec2 direction, inout float throatTravelDistance) {
   for (int i = 0; i < 200; i++) {
-    step2D(ray);
+    step2D(position, direction, throatTravelDistance);
     // normalizeDirection2D(ray);
   }
 }
@@ -87,32 +84,31 @@ void main() {
   float directionX = cos(vTheta);
   float sinTheta = sin(vTheta);
 
-  State2D ray;
-
-  ray.position = vec2(uCameraPosition.x, 0.0);
-  ray.direction = vec2(
+  vec2 position = vec2(uCameraPosition.x, 0.0);
+  vec2 direction = vec2(
     directionX,
     sqrt(sinTheta * sinTheta / (distanceToWormhole * distanceToWormhole + uRadiusSquared))
   );
+  float throatTravelDistance = 0.0;
 
-  integrate2D(ray);
+  integrate2D(position, direction, throatTravelDistance);
 
   // Compute the end-direction in cartesian space
-  distanceToWormhole = max(0.0, abs(ray.position.x) - uThroatLength);
-  float r = distanceToWormhole * (ray.position.x / abs(ray.position.x));
+  distanceToWormhole = max(0.0, abs(position.x) - uThroatLength);
+  float r = distanceToWormhole * (position.x / abs(position.x));
 
   vec2 finalDirection = vec2(
-    ray.direction.x * cos(ray.position.y) - r * ray.direction.y * sin(ray.position.y),
-    ray.direction.x * sin(ray.position.y) + r * ray.direction.y * cos(ray.position.y)
+    direction.x * cos(position.y) - r * direction.y * sin(position.y),
+    direction.x * sin(position.y) + r * direction.y * cos(position.y)
   );
 
   #if RENDER_TO_FLOAT_TEXTURE
-    gl_FragColor = vec4(finalDirection, ray.position.x, ray.throatTravelDistance);
+    gl_FragColor = vec4(finalDirection, position.x, throatTravelDistance);
   #else
-    float distance = (ray.throatTravelDistance - uThroatLength * THROAT_FADE_START) / (uThroatLength * THROAT_FADE_LENGTH);
+    float distance = (throatTravelDistance - uThroatLength * THROAT_FADE_START) / (uThroatLength * THROAT_FADE_LENGTH);
     gl_FragColor = vec4(
       normalize(finalDirection) * 0.5 + 0.5,
-      clamp(ray.position.x, -0.5, 0.5) + 0.5,
+      clamp(position.x, -0.5, 0.5) + 0.5,
       clamp(distance, 0.0, 1.0)
     );
   #endif

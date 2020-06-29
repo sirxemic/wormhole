@@ -119,19 +119,11 @@ export class World extends Mesh {
       generateMipmaps: false
     })
 
-    // For some reason we get visually better results when using highp for half-float textures and
-    // mediump for float textures. I have no idea why.
-    // Tested with iPhone SE (2016), iPhone XS, Oculus Quest and PC
-    let fragmentShader = integrationFragmentShader
-    if (glProfile.renderTargetType === HalfFloatType) {
-      fragmentShader = fragmentShader.replace('precision mediump', 'precision highp')
-    }
-
     const integrationShader = new RawShaderMaterial({
       uniforms: { ...this.commonUniforms },
       defines: commonDefines,
       vertexShader: integrationVertexShader,
-      fragmentShader
+      fragmentShader: integrationFragmentShader
     })
 
     this.integrationStep = new PixelShaderRenderer(integrationShader, this.integrationBuffer)
