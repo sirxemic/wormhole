@@ -1,4 +1,4 @@
-import { WebGLRenderer, MathUtils, Scene, Color, Vector3, Mesh, BoxBufferGeometry, MeshNormalMaterial, AmbientLight, DirectionalLight, MeshLambertMaterial } from 'three'
+import { WebGLRenderer, MathUtils, Scene, Color, Vector3, Mesh, BoxBufferGeometry, MeshNormalMaterial, AmbientLight, DirectionalLight, MeshLambertMaterial, PointLight } from 'three'
 import { WormholeSpace } from './WormholeSpace'
 import { World } from './World'
 import { DiagramRenderer } from './renderer/DiagramRenderer'
@@ -11,6 +11,7 @@ export class Renderer {
   diagramRenderer: DiagramRenderer
 
   scene = new Scene()
+  light = new PointLight(0x554433, 1, 4)
 
   isXr = false
   vrInstructions: VRInstructions
@@ -21,6 +22,7 @@ export class Renderer {
     readonly diagramMax: number,
     readonly player: Player
   ) {
+    this.webglRenderer.autoClear = false
     this.showDiagram = true
 
     this.world = new World(space, player)
@@ -30,6 +32,7 @@ export class Renderer {
     this.scene.add(this.player)
 
     this.scene.add(new AmbientLight(0xffffff, 2))
+    this.scene.add(this.light)
 
     this.vrInstructions = new VRInstructions(this.player)
     this.vrInstructions.hide()
@@ -78,6 +81,7 @@ export class Renderer {
   }
 
   renderNormal () {
+    this.webglRenderer.clearColor()
     this.webglRenderer.setViewport(0, 0, this.getWidth(), this.getHeight())
     this.webglRenderer.render(this.scene, this.player.eyes)
 
@@ -90,7 +94,9 @@ export class Renderer {
   }
 
   renderVr () {
+    this.webglRenderer.clearColor()
     this.webglRenderer.render(this.scene, this.player.eyes)
+    this.player.eyes.getWorldPosition(this.light.position)
   }
 
   resize () {

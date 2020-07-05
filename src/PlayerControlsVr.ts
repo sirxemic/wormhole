@@ -15,6 +15,7 @@ export class PlayerControlsVr extends PlayerControls {
   private session: any
 
   private controllers: VrController[] = []
+  private controllerJoystickTriggered: Map<VrController, boolean> = new Map()
 
   public constructor (
     player: Player,
@@ -67,10 +68,22 @@ export class PlayerControlsVr extends PlayerControls {
       if (!controller.gamepad) {
         continue
       }
-      const axes = new Vector2(controller.gamepad.axes[0], -controller.gamepad.axes[1])
-      const previousAxes = new Vector2(controller.previousAxes[0], -controller.previousAxes[1])
-      if (axes.lengthSq() > 0.6 * 0.6 && previousAxes.lengthSq() < 0.4 * 0.4) {
-        this.player.applyQuaternion(q1.setFromUnitVectors(UnitZ, v1.set(axes.x, axes.y, 1)))
+
+      const axes = new Vector2(-controller.gamepad.axes[2], controller.gamepad.axes[3])
+      const length = axes.length()
+
+      if (length < 0.4) {
+        this.controllerJoystickTriggered.set(controller, false)
+        continue
+      }
+
+      if (length > 0.8 && !this.controllerJoystickTriggered.get(controller)) {
+        v1.copy(UnitZ).applyQuaternion(this.player.eyes.quaternion)
+        v2.set(axes.x, axes.y, 3).normalize().applyQuaternion(this.player.eyes.quaternion)
+        q1.setFromUnitVectors(v1, v2)
+        this.player.quaternion.multiply(q1)
+
+        this.controllerJoystickTriggered.set(controller, true)
       }
     }
   }

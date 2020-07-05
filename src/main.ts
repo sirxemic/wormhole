@@ -27,7 +27,6 @@ class Main implements MainInterface {
     document.querySelector('#canvas-wrapper')!.appendChild(this.canvas)
 
     webglRenderer.setPixelRatio(window.devicePixelRatio)
-    webglRenderer.autoClear = false
     webglRenderer.xr.enabled = true
 
     this.maxX = this.wormholeSpace.radius * 5.5 + this.wormholeSpace.throatLength
