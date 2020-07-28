@@ -8,7 +8,7 @@ In this simulation you see the curvature of an Ellis wormhole with a throat.
 
 The metric used to trace all light rays is
 
-![ds^2=dl^2+(k^2+x^2)(d\theta^2+sin^2d\varphi^2)](https://latex.codecogs.com/gif.latex?ds^2=dl^2&plus;(k^2&plus;x^2)(d\theta^2&plus;sin^2d\varphi^2))
+![ds^2=dl^2+(k^2+x^2)(d\theta^2+sin^2 \theta\,d\varphi^2)](https://latex.codecogs.com/svg.latex?ds^2=dl^2+(k^2+x^2)(d\theta^2+sin^2%20\theta\\,d\varphi^2))
 
 where
 
