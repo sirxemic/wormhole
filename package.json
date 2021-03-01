@@ -30,7 +30,7 @@
     "webpack-dev-server": "^3.10.3"
   },
   "dependencies": {
-    "three": "^0.115.0",
+    "three": "^0.125.0",
     "webpack-glsl-loader": "^1.0.1",
     "webxr-polyfill": "^2.0.3"
   }
