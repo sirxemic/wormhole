@@ -3,17 +3,17 @@ import {
   Scene,
   WebGLRenderer,
   RawShaderMaterial,
-  RenderTarget
+  WebGLRenderTarget
 } from 'three'
 import { FullScreenMesh } from './FullScreenMesh'
 
 export class PixelShaderRenderer {
-  private camera = new OrthographicCamera(-1, 1, 1, -1, 0, 1)
+  private camera = new OrthographicCamera()
   private scene = new Scene()
 
   public constructor(
     shaderMaterial: RawShaderMaterial,
-    readonly renderTarget: RenderTarget
+    readonly renderTarget: WebGLRenderTarget
   ) {
     this.scene.add(new FullScreenMesh(shaderMaterial))
   }
@@ -28,7 +28,7 @@ export class PixelShaderRenderer {
 
 		renderer.state.buffers.depth.setMask(true)
 
-		if (renderer.autoClear === false) {
+		if (!renderer.autoClear) {
       renderer.clear()
     }
 

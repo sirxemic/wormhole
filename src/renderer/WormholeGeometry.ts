@@ -1,7 +1,7 @@
-import { Geometry, Vector2, Face3, Vector3 } from 'three'
+import { Vector3, BufferGeometry, Float32BufferAttribute } from 'three'
 import { WormholeSpace } from '../WormholeSpace'
 
-export class WormholeGeometry extends Geometry {
+export class WormholeGeometry extends BufferGeometry {
   constructor (
     private readonly space: WormholeSpace,
     min: number,
@@ -13,28 +13,30 @@ export class WormholeGeometry extends Geometry {
   }
 
   private build (min: number, max: number) {
+    const vertices: number[] = []
+    const normals: number[] = []
+    const uvs: number[] = []
+    const indexArray: number[] = []
+
     const xSegments = 80
     const ySegments = 32
     const xSegmentSize = (max - min) / xSegments
     const ySegmentSize = Math.PI * 2 / ySegments
 
-    const uvs = [], normals = []
-
-    let arrayIndex = 0
     for (let j = 0; j <= ySegments; j++) {
       for (let i = 0; i <= xSegments; i++) {
         const u = min + i * xSegmentSize
         const v = max + j * ySegmentSize
 
-        uvs[arrayIndex] = new Vector2(u, v)
-        normals[arrayIndex] = this.getNormal(u, v)
-        this.vertices[arrayIndex] = this.getPoint(u, v)
+        const normal = this.getNormal(u, v)
+        const vertex = this.getPoint(u, v)
 
-        arrayIndex++;
+        uvs.push(u, v)
+        normals.push(normal.x, normal.y, normal.z)
+        vertices.push(vertex.x, vertex.y, vertex.z)
       }
     }
 
-    arrayIndex = 0;
     for (let j = 1; j <= ySegments; j++) {
       for (let i = 1; i <= xSegments; i++) {
         const a = (xSegments + 1) * j + i - 1
@@ -42,45 +44,15 @@ export class WormholeGeometry extends Geometry {
         const c = (xSegments + 1) * (j - 1) + i
         const d = (xSegments + 1) * j + i
 
-        this.faces[arrayIndex] = new Face3(
-          b, a, d,
-          [
-            normals[b].clone(),
-            normals[a].clone(),
-            normals[d].clone()
-          ]
-        )
-        this.faceVertexUvs[0][arrayIndex] = [
-          uvs[b].clone(),
-          uvs[a].clone(),
-          uvs[d].clone()
-        ];
-
-        arrayIndex++
-
-        this.faces[arrayIndex] = new Face3(
-          b, d, c,
-          [
-            normals[b].clone(),
-            normals[d].clone(),
-            normals[c].clone()
-          ]
-        )
-        this.faceVertexUvs[0][arrayIndex] = [
-          uvs[b].clone(),
-          uvs[d].clone(),
-          uvs[c].clone()
-        ]
-
-        arrayIndex++
+        indexArray.push(b, a, d)
+        indexArray.push(b, d, c)
       }
     }
 
-    this.computeFaceNormals()
-
-    this.verticesNeedUpdate = true
-    this.normalsNeedUpdate = true
-    this.uvsNeedUpdate = true
+    this.setIndex(indexArray)
+    this.setAttribute('position', new Float32BufferAttribute(vertices, 3))
+    this.setAttribute('normal', new Float32BufferAttribute(normals, 3))
+    this.setAttribute('uv', new Float32BufferAttribute(uvs, 2))
   }
 
   public getPoint (x: number, y: number, target = new Vector3()) {

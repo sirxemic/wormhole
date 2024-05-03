@@ -67,8 +67,8 @@ export class PlayerControlsTouch extends PlayerControls {
   }
 
   public async requestFreeMovement () {
-    if (window.DeviceOrientationEvent && window.DeviceOrientationEvent.requestPermission) {
-      await window.DeviceOrientationEvent.requestPermission()
+    if (window.DeviceOrientationEvent && (window.DeviceOrientationEvent as any).requestPermission) {
+      await (window.DeviceOrientationEvent as any).requestPermission()
     }
 
     window.addEventListener('orientationchange', this.onScreenOrientationChange, false)
@@ -200,7 +200,7 @@ export class PlayerControlsTouch extends PlayerControls {
     }
   }
 
-  protected updateVelocity (delta: number) {
+  protected updateVelocity () {
     this.velocity
       .set(0, 0, this.forwardSpeed)
       .applyQuaternion(this.player.eyes.getWorldQuaternion(q0))

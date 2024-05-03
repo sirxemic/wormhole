@@ -29,6 +29,7 @@ const tangent = new Vector3()
 const bitangent = new Vector3()
 
 export class DiagramRenderer {
+  limit: number
   scene = new Scene()
   camera = new PerspectiveCamera(60, 1, 1, 1000)
   geometry: WormholeGeometry
@@ -38,9 +39,10 @@ export class DiagramRenderer {
   directionMesh: Mesh
 
   constructor (
-    private readonly space: WormholeSpace,
-    private readonly limit: number
+    space: WormholeSpace,
+    limit: number
   ) {
+    this.limit = limit
     this.camera.up.set(0, 0, 1)
 
     this.geometry = new WormholeGeometry(space, -limit, limit)
@@ -61,7 +63,7 @@ export class DiagramRenderer {
     this.scene.add(this.playerMesh)
 
     const loader = new TextureLoader()
-    const gridTexture = loader.load('textures/grid.png')
+    const gridTexture = loader.load(new URL('../textures/grid.png', import.meta.url).href)
 
     gridTexture.anisotropy = 4
     gridTexture.wrapS = MirroredRepeatWrapping
@@ -70,6 +72,7 @@ export class DiagramRenderer {
     const material = new ShaderMaterial({
       uniforms: {
         map: {
+          // @ts-ignore
           type: 't',
           value: gridTexture
         }

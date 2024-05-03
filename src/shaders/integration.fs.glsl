@@ -1,6 +1,6 @@
 precision highp float;
 
-@import ./common;
+#include "./common";
 
 uniform vec3 uCameraPosition;
 

@@ -7,7 +7,7 @@ import { PlayerControlsTouch } from './PlayerControlsMobile'
 import { PlayerControlsVr } from './PlayerControlsVr'
 import { WebGLRenderer } from 'three'
 import { UiManager } from './UiManager'
-import { MainInterface, ControlScheme } from './types'
+import { ControlScheme, MainInterface } from './types'
 
 class Main implements MainInterface {
   canvas: HTMLCanvasElement

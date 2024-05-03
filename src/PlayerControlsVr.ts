@@ -1,15 +1,12 @@
 import { PlayerControls } from './PlayerControls'
 import { Player } from './Player'
-import { WebGLRenderer, PerspectiveCamera, Vector3, Vector2, Quaternion } from 'three'
+import { WebGLRenderer, Vector3, Vector2, Quaternion } from 'three'
 import { UnitZ } from './MathUtils'
 import { VrController } from './VrController'
 
 const v1 = new Vector3()
 const v2 = new Vector3()
 const q1 = new Quaternion()
-
-// Hack to get the VR camera's position in updateVelocity
-const dummyCamera = new PerspectiveCamera()
 
 export class PlayerControlsVr extends PlayerControls {
   private session: any
@@ -53,17 +50,17 @@ export class PlayerControlsVr extends PlayerControls {
     this.session = null
   }
 
-  protected beforeUpdate (delta: number) {
-    const camera = this.renderer.xr.getCamera(dummyCamera)
+  protected beforeUpdate () {
+    const camera = this.renderer.xr.getCamera()
     this.player.eyes.position.copy(camera.position)
     this.player.eyes.quaternion.copy(camera.quaternion)
   }
 
-  protected afterUpdate (delta: number) {
+  protected afterUpdate () {
     this.controllers.forEach(controller => controller.update())
   }
 
-  protected updateOrientation (delta: number) {
+  protected updateOrientation () {
     for (let controller of this.controllers) {
       if (!controller.gamepad) {
         continue

@@ -1,4 +1,4 @@
-import { Object3D, Mesh, MeshBasicMaterial, CanvasTexture, PlaneBufferGeometry, DoubleSide, Quaternion, Vector3 } from 'three'
+import { Object3D, Mesh, MeshBasicMaterial, CanvasTexture, PlaneGeometry, DoubleSide, Quaternion, Vector3 } from 'three'
 import { Player } from './Player'
 
 function wrapText(ctx: CanvasRenderingContext2D, text: string, x: number, y: number, lineWidth: number, lineHeight: number) {
@@ -53,7 +53,7 @@ export class VRInstructions extends Object3D {
       side: DoubleSide
     })
     this.mesh = new Mesh(
-      new PlaneBufferGeometry(canvas.width / canvas.height * 2, 2),
+      new PlaneGeometry(canvas.width / canvas.height * 2, 2),
       this.material
     )
 

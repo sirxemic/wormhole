@@ -1,6 +1,6 @@
 precision highp float;
 
-@import ./common;
+#include "./common";
 
 attribute vec2 position;
 

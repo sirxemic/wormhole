@@ -1,13 +1,12 @@
-import { Group, Event } from 'three'
-import { WebXRManager } from 'three/src/renderers/webxr/WebXRManager'
-import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory'
+import { WebXRManager, XRGripSpace, XRTargetRaySpace } from 'three'
+import { XRControllerModelFactory } from 'three/examples/jsm/webxr/XRControllerModelFactory.js'
 import { Action } from './Action'
 
 const factory = new XRControllerModelFactory()
 
 export class VrController {
-  readonly controller: Group
-  readonly grip: Group
+  readonly controller: XRTargetRaySpace
+  readonly grip: XRGripSpace
 
   public disconnectAction = new Action()
 
@@ -46,25 +45,25 @@ export class VrController {
     this.previousAxes = [...this.gamepad.axes]
   }
 
-  private onControllerConnect (e: Event) {
+  private onControllerConnect (e: { data: XRInputSource }) {
     if (!e.data.gamepad) {
       return
     }
     this.gamepad = e.data.gamepad
   }
 
-  private onControllerDisconnect (e: Event) {
+  private onControllerDisconnect (e: { data: XRInputSource }) {
     if (!e.data.gamepad) {
       return
     }
     this.disconnectAction.dispatch(undefined)
   }
 
-  private onSelectStart (e: Event) {
+  private onSelectStart () {
     this.triggerPressed = true
   }
 
-  private onSelectEnd (e: Event) {
+  private onSelectEnd () {
     this.triggerPressed = false
   }
 }

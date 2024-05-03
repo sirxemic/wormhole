@@ -1,3 +1,5 @@
+import MipmapWorker from './mipmapWorker.ts?worker'
+
 const mipmapCanvas = document.createElement('canvas')
 const ctx = mipmapCanvas.getContext('2d')!
 
@@ -9,7 +11,7 @@ export async function generateMipmaps (image: HTMLImageElement): Promise<ImageDa
   const imageData = ctx.getImageData(0, 0, mipmapCanvas.width, mipmapCanvas.width)
 
   return new Promise<ImageData[]>((resolve) => {
-    const worker = new Worker('dist/mipmapWorker.js')
+    const worker = new MipmapWorker()
     worker.onmessage = (event) => {
       resolve(event.data as ImageData[])
     }

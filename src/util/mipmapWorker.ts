@@ -1,3 +1,5 @@
+/// <reference lib="webworker" />
+
 function getMipmappedColor (factor: number, c00: number, c01: number, c10: number, c11: number) {
   let result = 0
   result += (c00 / 255) ** factor

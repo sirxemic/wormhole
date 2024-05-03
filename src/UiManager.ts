@@ -63,7 +63,7 @@ export class UiManager {
       }
     }, false)
 
-    document.addEventListener('pointerlockchange', (e) => {
+    document.addEventListener('pointerlockchange', () => {
       if (document.pointerLockElement === canvas) {
         this.setControls('desktop')
       }

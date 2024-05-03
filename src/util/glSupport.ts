@@ -1,11 +1,10 @@
-import { HalfFloatType, FloatType, UnsignedByteType } from 'three'
+import { HalfFloatType, UnsignedByteType } from 'three'
 
 const canvas = document.createElement('canvas')
 const gl = canvas.getContext('webgl')!
 const texture = gl.createTexture()
 const framebuffer = gl.createFramebuffer()
 
-const OES_texture_float = gl.getExtension('OES_texture_float')
 const OES_texture_half_float = gl.getExtension('OES_texture_half_float')
 
 /**
@@ -13,11 +12,6 @@ const OES_texture_half_float = gl.getExtension('OES_texture_half_float')
  */
 function getSupporedRenderTargetType() {
   const configs = [
-    {
-      extension: OES_texture_float,
-      test: gl.FLOAT,
-      type: FloatType
-    },
     {
       extension: OES_texture_half_float,
       test: OES_texture_half_float?.HALF_FLOAT_OES,

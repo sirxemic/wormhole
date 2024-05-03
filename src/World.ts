@@ -12,7 +12,6 @@ import {
   CubeTextureLoader,
   ClampToEdgeWrapping,
   RGBAFormat,
-  FloatType,
   RawShaderMaterial,
   WebGLRenderer,
   HalfFloatType,
@@ -21,7 +20,7 @@ import {
   Scene,
   Camera,
   Vector4,
-  PlaneBufferGeometry,
+  PlaneGeometry,
   MeshBasicMaterial
 } from 'three'
 
@@ -33,15 +32,16 @@ import { generateMipmaps } from './util/mipmaps'
 import { Player } from './Player'
 import { UnitXNeg } from './MathUtils'
 
-function loadSkybox(path: string, ext: string = 'jpg') {
+function loadSkybox(path: string) {
   const files = [
     'sky_pos_x', 'sky_neg_x',
     'sky_pos_y', 'sky_neg_y',
     'sky_pos_z', 'sky_neg_z'
-  ].map(file => file + '.' + ext)
+  ].map(file => {
+    return new URL(`./textures/${path}/${file}.jpg`, import.meta.url).href
+  })
 
   const cubeTexture = new CubeTextureLoader()
-    .setPath(path)
     .load(files, async () => {
       const images = cubeTexture.images as HTMLImageElement[]
       const mipmapImageData = await Promise.all(images.map(generateMipmaps))
@@ -86,8 +86,8 @@ export class World extends Mesh {
     this.frustumCulled = false
 
     // Init skybox textures
-    const skybox1 = loadSkybox('textures/skybox1/')
-    const skybox2 = loadSkybox('textures/skybox2/')
+    const skybox1 = loadSkybox('skybox1')
+    const skybox2 = loadSkybox('skybox2')
 
     // Init uniforms
     this.commonUniforms = {
@@ -100,7 +100,7 @@ export class World extends Mesh {
 
     // Init defines
     const commonDefines = {
-      RENDER_TO_FLOAT_TEXTURE: ~~(glProfile.renderTargetType === FloatType || glProfile.renderTargetType === HalfFloatType)
+      RENDER_TO_FLOAT_TEXTURE: ~~(glProfile.renderTargetType === HalfFloatType)
     }
 
     // Init integration stuff
@@ -144,14 +144,15 @@ export class World extends Mesh {
     this.renderResultBuffer = new WebGLRenderTarget(1024, 1024, {
       depthBuffer: false,
       stencilBuffer: false,
-      generateMipmaps: false
+      generateMipmaps: false,
+      type: HalfFloatType
     })
 
     this.renderStep = new PixelShaderRenderer(renderShader, this.renderResultBuffer)
 
     this.onBeforeRender = this.beforeRender.bind(this)
 
-    this.geometry = new PlaneBufferGeometry( 2, 2, 32, 32 )
+    this.geometry = new PlaneGeometry( 2, 2, 32, 32 )
     this.material = new MeshBasicMaterial({
       map: this.renderResultBuffer.texture,
       depthWrite: false
@@ -160,13 +161,13 @@ export class World extends Mesh {
     this.renderOrder = -1
   }
 
-  beforeRender (renderer: WebGLRenderer, scene: Scene, currentCamera: Camera) {
+  beforeRender (renderer: WebGLRenderer, _scene: Scene, currentCamera: Camera) {
     const camera = currentCamera as PerspectiveCamera
 
     // Gotta decompose, get the inverse and aspect manually because the matrices of "XR cameras" are changed
     // directly, without updating all these things
     camera.matrixWorld.decompose(tempTranslation, tempQuaternion, tempScale)
-    inverseMatrix.getInverse(camera.projectionMatrix)
+    inverseMatrix.copy(camera.projectionMatrix).invert()
 
     const e0 = inverseMatrix.elements[0]
     const e5 = inverseMatrix.elements[5]

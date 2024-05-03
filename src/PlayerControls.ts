@@ -42,8 +42,8 @@ export abstract class PlayerControls {
 
   protected abstract updateOrientation (delta: number): void
   protected abstract updateVelocity (delta: number): void
-  protected beforeUpdate (delta: number) {}
-  protected afterUpdate (delta: number) {}
+  protected beforeUpdate (_delta: number) {}
+  protected afterUpdate (_delta: number) {}
 
   public update (delta: number) {
     if (!this.enabled) {

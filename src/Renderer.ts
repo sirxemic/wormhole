@@ -1,4 +1,4 @@
-import { WebGLRenderer, MathUtils, Scene, Color, Vector3, Mesh, BoxBufferGeometry, MeshNormalMaterial, AmbientLight, DirectionalLight, MeshLambertMaterial, PointLight } from 'three'
+import { WebGLRenderer, MathUtils, Scene, AmbientLight, PointLight } from 'three'
 import { WormholeSpace } from './WormholeSpace'
 import { World } from './World'
 import { DiagramRenderer } from './renderer/DiagramRenderer'
