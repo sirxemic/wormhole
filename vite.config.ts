@@ -3,6 +3,7 @@ import glsl from 'vite-plugin-glsl'
 import basicSsl from '@vitejs/plugin-basic-ssl'
 
 export default defineConfig({
+  base: '/wormhole',
   plugins: [
     glsl(),
     basicSsl()
